@@ -6,6 +6,7 @@ with pkgs; [
     app2unit
     upower
     calibre
+    p7zip
     foot
     android-file-transfer
     signal-desktop
