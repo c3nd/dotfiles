@@ -53,9 +53,6 @@
         };
     };
   };
-  xdg.dataFile."fonts"={
-    source= mkOutOfStoreSymlink "../TX-02";
-  };
   qt.platformTheme.name = "qt6ct";
   fonts.fontconfig.enable = true;
   services.hyprpolkitagent.enable = true;
@@ -72,7 +69,7 @@
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
-      plspush = "cd dotfiles/ && git commit -am 'autocommmit' && cd ../ ";
+      plspush = "cd dotfiles/ && git commit -am 'autocommmit' && git push -u --no-verify && cd ../";
     };
   };
   programs.home-manager.enable = true;
