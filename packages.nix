@@ -5,6 +5,7 @@ with pkgs; [
     kitty
     app2unit
     upower
+    calibre
     foot
     android-file-transfer
     signal-desktop
