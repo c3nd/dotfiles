@@ -33,7 +33,7 @@
           };
           visualiser = {
             enabled = true;
-            autohide = true;
+            autoHide = true;
           };
         };
         bar={
@@ -69,7 +69,7 @@
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
-      push = "cd dotfiles/ && git commit -am 'autocommmit' && cd ../ ";
+      plspush = "cd dotfiles/ && git commit -am 'autocommmit' && cd ../ ";
     };
   };
   programs.home-manager.enable = true;
