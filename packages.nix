@@ -12,7 +12,7 @@ with pkgs; [
     cliphist
     wl-clipboard
     hyprpicker
-    trashcli
+    trash-cli
     jq
     btop
     eza
