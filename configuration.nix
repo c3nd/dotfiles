@@ -36,7 +36,10 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
   services.upower.enable = true;
-
+  services.xserver.videoDrivers = {
+    "nvidia"
+    "modesetting"
+  };
   # Enable sound.
   services.pipewire = {
      enable = true;
@@ -45,6 +48,10 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput.enable = true;
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+             "nvidia-x11"
+             "nvidia-settings"
+           ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.kepler452= {
@@ -64,7 +71,22 @@
     portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
   services.displayManager.ly.enable = true;
-  hardware.nvidia.open = true;
+  hardware.nvidia = {
+    modesetting.enable = true;
+    package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+    powerManagement.enable = false;
+    nvidiaSettings = true;
+    open = false;
+    prime = {
+      sync = true;
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
+  };
+  hardware.graphics = {
+    enable = true;
+  };
+
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; import ./packages.nix { inherit pkgs; };

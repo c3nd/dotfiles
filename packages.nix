@@ -7,6 +7,7 @@ with pkgs; [
     upower
     calibre
     p7zip
+    lshw
     foot
     android-file-transfer
     signal-desktop
