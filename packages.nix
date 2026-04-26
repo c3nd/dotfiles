@@ -5,6 +5,9 @@ with pkgs; [
     kitty
     app2unit
     foot
+    android-file-transfer
+    signal-desktop
+    scrcpy
     equibop
     fastfetch
     lm_sensors
