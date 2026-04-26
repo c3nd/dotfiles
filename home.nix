@@ -20,11 +20,32 @@
 
     };
     settings = {
-        bar.status = {
+        appearance ={
+          font.family = {
+            clock = "TX-02 Regular";
+            mono = "TX-02 Regular";
+            sans = "TX-02 Regular";
+          };
+        };
+        background = {
+          desktopClock = {
+            enabled = true;
+          };
+          visualizer = {
+            enabled = true;
+            autohide = true;
+          };
+        };
+        bar={
+          clock.showIcon = true;
+          status = {
             showBattery = true;
+            };
         };
         paths.wallpaperDir = "~/Pictures/Wallpapers";
+        border.rounding = "1.7";
     };
+
     cli = {
         enable = true;
         settings = {
@@ -32,6 +53,8 @@
         };
     };
   };
+  qt.platformTheme.name = "qt6ct";
+  fonts.fontconfig.enable = true;
   services.hyprpolkitagent.enable = true;
   programs.git= {
     enable = true;
@@ -46,12 +69,6 @@
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
-    };
-  };
-   home.file = {
-    ".local/share/fonts/" = {
-      source = config/fonts;
-      recursive = true;
     };
   };
   programs.home-manager.enable = true;

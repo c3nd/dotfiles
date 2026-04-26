@@ -63,7 +63,7 @@
     portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
   services.displayManager.ly.enable = true;
-
+  hardware.nvidia.open = true;
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; import ./packages.nix { inherit pkgs; };

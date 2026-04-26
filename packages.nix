@@ -4,6 +4,7 @@ with pkgs; [
     git
     kitty
     app2unit
+    upower
     foot
     android-file-transfer
     signal-desktop
