@@ -69,7 +69,7 @@
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
-      plspush = "cd dotfiles/ && git commit -am 'autocommmit' && git push -u --no-verify && cd ../";
+      plspush = "cd dotfiles/ && git commit -am 'autocommmit' && cd ../";
     };
   };
   programs.home-manager.enable = true;
