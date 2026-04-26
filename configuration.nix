@@ -36,10 +36,10 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
   services.upower.enable = true;
-  services.xserver.videoDrivers = {
+  services.xserver.videoDrivers = [
     "nvidia"
     "modesetting"
-  };
+  ];
   # Enable sound.
   services.pipewire = {
      enable = true;
