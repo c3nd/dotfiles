@@ -22,7 +22,6 @@
     settings = {
         appearance ={
           font.family = {
-            clock = "TX-02";
             mono = "TX-02";
             sans = "TX-02";
           };
@@ -70,6 +69,7 @@
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
+      push = "cd dotfiles/ && git commit -am 'autocommmit' && cd ../ ";
     };
   };
   programs.home-manager.enable = true;
