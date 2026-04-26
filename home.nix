@@ -22,16 +22,17 @@
     settings = {
         appearance ={
           font.family = {
-            clock = "TX-02 Regular";
-            mono = "TX-02 Regular";
-            sans = "TX-02 Regular";
+            clock = "TX-02";
+            mono = "TX-02";
+            sans = "TX-02";
           };
         };
         background = {
+          enabled = true;
           desktopClock = {
             enabled = true;
           };
-          visualizer = {
+          visualiser = {
             enabled = true;
             autohide = true;
           };
