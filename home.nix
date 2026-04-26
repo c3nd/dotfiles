@@ -53,6 +53,9 @@
         };
     };
   };
+  xdg.dataFile."fonts"={
+    source= mkOutOfStoreSymlink "../TX-02";
+  };
   qt.platformTheme.name = "qt6ct";
   fonts.fontconfig.enable = true;
   services.hyprpolkitagent.enable = true;
