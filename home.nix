@@ -48,5 +48,11 @@
       btw = "echo i use nixos, btw";
     };
   };
+   home.file = {
+    ".local/share/fonts/" = {
+      source = config/fonts;
+      recursive = true;
+    };
+  };
   programs.home-manager.enable = true;
 }

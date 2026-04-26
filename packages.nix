@@ -9,6 +9,13 @@ with pkgs; [
     signal-desktop
     scrcpy
     equibop
+    cliphist
+    wl-clipboard
+    hyprpicker
+    trashcli
+    jq
+    btop
+    eza
     fastfetch
     lm_sensors
     strawberry
