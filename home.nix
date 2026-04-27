@@ -48,17 +48,7 @@
           toasts ={
             nowPlaying = true;
           };
-        };
-        bar={
-          clock.showIcon = true;
-          status = {
-            showBattery = true;
-            };
-        };
-        paths.wallpaperDir = "~/Pictures/Wallpapers";
-        paths.lyricsDir = "~/Music/LyricsDir";
-        border.rounding = "1.7";
-        vpn = {
+          vpn = {
             enabled = true;
             provider = [
                 {
@@ -70,6 +60,17 @@
                   }
                 ];
             };
+        };
+        bar={
+          clock.showIcon = true;
+          status = {
+            showBattery = true;
+            };
+        };
+        paths.wallpaperDir = "~/Pictures/Wallpapers";
+        paths.lyricsDir = "~/Music/LyricsDir";
+        border.rounding = "1.7";
+
         };
     cli = {
         enable = true;
