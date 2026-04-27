@@ -12,6 +12,7 @@ with pkgs; [
     android-file-transfer
     signal-desktop
     scrcpy
+    cloudflare-warp
     equibop
     cliphist
     wl-clipboard

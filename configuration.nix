@@ -36,6 +36,7 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
   services.upower.enable = true;
+  services.cloudflare-warp.enable=true;
   services.xserver.videoDrivers = [
     "nvidia"
     "modesetting"
@@ -51,6 +52,7 @@
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
              "nvidia-x11"
              "nvidia-settings"
+             "cloudflare-warp"
            ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.

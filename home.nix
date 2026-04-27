@@ -10,6 +10,7 @@
     unzip
     p7zip
     inputs.zen-browser.packages.${pkgs.system}.beta
+    inputs.brave-previews.packages.${pkgs.system}.brave-nightly
   ];
   programs.caelestia= {
     enable = true;
@@ -57,8 +58,19 @@
         paths.wallpaperDir = "~/Pictures/Wallpapers";
         paths.lyricsDir = "~/Music/LyricsDir";
         border.rounding = "1.7";
-    };
+        vpn = {
+            enabled = true;
+            provider = [
+                {
+                  name = "warp";
+                  interface = "CloudflareWARP";
+                  displayName = "Cloudflare Warp";
+                  enabled = "true";
 
+                  }
+                ];
+            };
+        };
     cli = {
         enable = true;
         settings = {
