@@ -55,7 +55,7 @@
             };
         };
         paths.wallpaperDir = "~/Pictures/Wallpapers";
-        paths.LyricsDir = "~/Music/LyricsDir";
+        paths.lyricsDir = "~/Music/LyricsDir";
         border.rounding = "1.7";
     };
 
