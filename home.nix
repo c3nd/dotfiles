@@ -26,6 +26,12 @@
             sans = "TX-02";
           };
         };
+        services = {
+          showLyrics = true;
+          gpuType = "Quadro P2000";
+          useTwelveHourClock= false;
+          useFahrenheit= true;
+        };
         background = {
           enabled = true;
           desktopClock = {
@@ -36,6 +42,12 @@
             autoHide = true;
           };
         };
+        utilities = {
+          enabled = true;
+          toasts ={
+            nowPlaying = true;
+          };
+        };
         bar={
           clock.showIcon = true;
           status = {
@@ -43,6 +55,7 @@
             };
         };
         paths.wallpaperDir = "~/Pictures/Wallpapers";
+        paths.LyricsDir = "~/Music/LyricsDir";
         border.rounding = "1.7";
     };
 
