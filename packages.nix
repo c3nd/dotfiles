@@ -6,6 +6,8 @@ with pkgs; [
     app2unit
     upower
     calibre
+    xnviewmp
+    nil
     p7zip
     lshw
     foot
