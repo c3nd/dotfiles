@@ -1,0 +1,48 @@
+{
+    "appearance": {
+        "font": {
+            "family": {
+                "mono": "TX-02",
+                "sans": "TX-02"
+            },
+            "size": {
+                "scale": 1
+            }
+        },
+        "transparency": {
+            "base": 0.7505445273372289,
+            "enabled": true
+        }
+    },
+    "background": {
+        "desktopClock": {
+            "enabled": true,
+            "shadow": {
+                "enabled": false
+            }
+        },
+        "visualiser": {
+            "enabled": true
+        }
+    },
+    "bar": {
+        "clock": {
+            "showDate": true
+        }
+    },
+    "border": {
+        "rounding": 2
+    },
+    "utilities": {
+        "vpn": {
+            "provider": [
+                {
+                    "displayName": "Cloudflare WARP",
+                    "enabled": true,
+                    "interface": "CloudflareWARP",
+                    "name": "warp"
+                }
+            ]
+        }
+    }
+}
