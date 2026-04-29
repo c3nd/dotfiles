@@ -14,6 +14,7 @@ with pkgs; [
     android-file-transfer
     signal-desktop
     scrcpy
+    zed-editor
     cloudflare-warp
     equibop
     cliphist
