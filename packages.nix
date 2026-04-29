@@ -5,7 +5,6 @@ with pkgs; [
     kitty
     app2unit
     upower
-    calibre
     xnviewmp
     nil
     p7zip
@@ -14,7 +13,6 @@ with pkgs; [
     android-file-transfer
     signal-desktop
     scrcpy
-    zed-editor
     cloudflare-warp
     equibop
     cliphist

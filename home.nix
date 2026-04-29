@@ -5,7 +5,6 @@ let
 in
 
 {
-  
   home.username = "kepler452";
   home.homeDirectory = "/home/kepler452";
   home.packages = with pkgs; [
@@ -27,20 +26,22 @@ in
 
     };
     cli = {
-        enable = true;
-        settings = {
-            theme.enableGtk = true;
-        };
+      enable = true;
     };
   };
   xdg.configFile."caelestia"={
-   source = create_symlink"${dotfiles}/caelestia";
+   source = create_symlink "${dotfiles}/caelestia";
    force = true;
    recursive = true;
   };
   qt.platformTheme.name = "qt6ct";
   xdg.configFile."qt6ct"={
-    source = create_symlink"${dotfiles}/qt6ct";
+    source = create_symlink "${dotfiles}/qt6ct";
+    recursive = true;
+    force = true;
+  };
+  xdg.configFile."qtengine" = {
+    source = create_symlink "${dotfiles}/qtengine";
     recursive = true;
     force = true;
   };
