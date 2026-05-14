@@ -5,9 +5,11 @@ with pkgs; [
     kitty
     app2unit
     upower
+    motrix-next
     xnviewmp
     nil
     p7zip
+    pavucontrol
     lshw
     foot
     android-file-transfer

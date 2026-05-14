@@ -26,6 +26,10 @@
         }
     },
     "bar": {
+        "activeWindow": {
+            "compact": true,
+            "inverted": false
+        },
         "clock": {
             "showDate": true
         }
@@ -33,7 +37,13 @@
     "border": {
         "rounding": 2
     },
+    "services": {
+        "showLyrics": true
+    },
     "utilities": {
+        "toasts": {
+            "nowPlaying": true
+        },
         "vpn": {
             "provider": [
                 {

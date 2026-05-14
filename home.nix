@@ -14,6 +14,7 @@ in
     zed-editor
     calibre
     p7zip
+    zed-editor
     inputs.zen-browser.packages.${pkgs.system}.beta
     inputs.brave-previews.packages.${pkgs.system}.brave-nightly
   ];
@@ -34,7 +35,7 @@ in
    force = true;
    recursive = true;
   };
-  qt.platformTheme.name = "qt6ct";
+  qt.platformTheme.name = "qtengine";
   xdg.configFile."qt6ct"={
     source = create_symlink "${dotfiles}/qt6ct";
     recursive = true;
@@ -42,6 +43,12 @@ in
   };
   xdg.configFile."qtengine" = {
     source = create_symlink "${dotfiles}/qtengine";
+    recursive = true;
+    force = true;
+  };
+  programs.zed-editor.enable = true;
+  xdg.configFile."zed" = {
+    source = create_symlink "${dotfiles}/zed";
     recursive = true;
     force = true;
   };
