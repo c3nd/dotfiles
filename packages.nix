@@ -5,8 +5,13 @@ with pkgs; [
     kitty
     app2unit
     upower
-    motrix-next
     xnviewmp
+    gcc
+    openssl
+    make
+    pkg-config
+    leveldb
+    motrix-next
     nil
     p7zip
     pavucontrol

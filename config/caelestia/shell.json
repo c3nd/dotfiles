@@ -35,7 +35,7 @@
         }
     },
     "border": {
-        "rounding": 2
+        "rounding": 0
     },
     "services": {
         "showLyrics": true
