@@ -8,7 +8,7 @@ with pkgs; [
     xnviewmp
     gcc
     openssl
-    make
+    gnumake
     pkg-config
     leveldb
     motrix-next
