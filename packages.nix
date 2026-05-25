@@ -3,6 +3,7 @@ with pkgs; [
     vim
     git
     kitty
+    llmfit
     app2unit
     upower
     xnviewmp
