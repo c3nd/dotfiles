@@ -7,7 +7,7 @@ with pkgs; [
     upower
     xnviewmp
     gcc
-    openssl
+    openssl_3
     gnumake
     pkg-config
     leveldb
