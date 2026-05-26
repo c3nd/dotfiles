@@ -55,6 +55,7 @@
              "nvidia-settings"
              "cloudflare-warp"
              "xnviewmp"
+             "p7zip"
            ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.

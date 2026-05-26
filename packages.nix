@@ -8,6 +8,7 @@ with pkgs; [
     upower
     xnviewmp
     gcc
+    p7zip
     prismlauncher
     openssl_3
     gnumake
