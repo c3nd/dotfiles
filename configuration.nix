@@ -38,7 +38,6 @@
   services.printing.enable = true;
   services.upower.enable = true;
   services.cloudflare-warp.enable=true;
-  services.opentabletdriver.enable = true;
   services.xserver.videoDrivers = [
     "nvidia"
     "modesetting"
