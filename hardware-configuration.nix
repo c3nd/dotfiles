@@ -24,11 +24,6 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
-  fileSystems."/home/kepler452/ExtStorage" =
-    { device = "/dev/disk/by-uuid/6fba9669-d13d-4d48-92b0-0eb9def28ddf";
-      fsType = "ext4";
-    };
-
   swapDevices =
     [ { device = "/dev/disk/by-uuid/8f698d1f-2615-4197-a5e7-df56edae47ff"; }
     ];
