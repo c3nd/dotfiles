@@ -58,10 +58,12 @@ in
   services.hyprpolkitagent.enable = true;
   programs.git= {
     enable = true;
-    userName = "c3nd";
-    userEmail = "ascendancyluvsu@gmail.com";
-    extraConfig = {
-        init.defaultBranch = "main";
+    settings= {
+      user = {
+        name = "c3nd";
+        email = "ascendancyluvsu@gmail.com";
+      };
+      init.defaultBranch = "main";
     };
   };
   home.stateVersion = "25.11";
