@@ -6,6 +6,8 @@ with pkgs; [
     llmfit
     app2unit
     upower
+    libinput
+    krita
     xnviewmp
     gcc
     p7zip
