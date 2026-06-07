@@ -2,6 +2,7 @@
     "appearance": {
         "font": {
             "family": {
+                "clock": "TX-02",
                 "mono": "TX-02",
                 "sans": "TX-02"
             },
@@ -37,7 +38,12 @@
     "border": {
         "rounding": 0
     },
+    "launcher": {
+        "enableDangerousActions": true,
+        "showOnHover": true
+    },
     "services": {
+        "lyricsBackend": "Auto",
         "showLyrics": true
     },
     "utilities": {
