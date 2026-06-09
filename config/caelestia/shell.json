@@ -1,62 +1,196 @@
 {
     "appearance": {
         "font": {
-            "family": {
-                "clock": "TX-02",
-                "mono": "TX-02",
-                "sans": "TX-02"
+            "body": {
+                "family": "TX-02",
+                "large": {
+                    "italic": false,
+                    "size": 16,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 400
+                },
+                "medium": {
+                    "italic": false,
+                    "size": 14,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 400
+                },
+                "small": {
+                    "italic": false,
+                    "size": 12,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 400
+                }
             },
-            "size": {
-                "scale": 1
+            "clock": "TX-02 Condensed",
+            "headline": {
+                "family": "TX-02 SemiCondensed",
+                "large": {
+                    "italic": false,
+                    "size": 32,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "medium": {
+                    "italic": false,
+                    "size": 28,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "small": {
+                    "italic": false,
+                    "size": 24,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                }
+            },
+            "icon": {
+                "extraLarge": {
+                    "italic": false,
+                    "size": 36,
+                    "vaxes": {
+                    },
+                    "weight": 400
+                }
+            },
+            "label": {
+                "family": "TX-02",
+                "large": {
+                    "italic": false,
+                    "size": 14,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "medium": {
+                    "italic": false,
+                    "size": 12,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "small": {
+                    "italic": false,
+                    "size": 11,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 400
+                }
+            },
+            "mono": {
+                "family": "TX-02",
+                "large": {
+                    "italic": false,
+                    "size": 16,
+                    "vaxes": {
+                    },
+                    "weight": 400
+                },
+                "medium": {
+                    "italic": false,
+                    "size": 14,
+                    "vaxes": {
+                    },
+                    "weight": 400
+                },
+                "small": {
+                    "italic": false,
+                    "size": 12,
+                    "vaxes": {
+                    },
+                    "weight": 400
+                }
+            },
+            "scale": 0.95,
+            "title": {
+                "family": "TX-02",
+                "large": {
+                    "italic": false,
+                    "size": 22,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "medium": {
+                    "italic": false,
+                    "size": 16,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                },
+                "small": {
+                    "italic": false,
+                    "size": 14,
+                    "vaxes": {
+                        "ROND": 25
+                    },
+                    "weight": 500
+                }
             }
+        },
+        "padding": {
+            "scale": 1
+        },
+        "rounding": {
+            "scale": 1
+        },
+        "spacing": {
+            "scale": 1
         },
         "transparency": {
-            "base": 0.7505445273372289,
-            "enabled": true
-        }
-    },
-    "background": {
-        "desktopClock": {
+            "base": 0.85,
             "enabled": true,
-            "shadow": {
-                "enabled": false
-            }
-        },
-        "visualiser": {
-            "enabled": true
+            "layers": 0.4
         }
-    },
-    "bar": {
-        "activeWindow": {
-            "compact": true,
-            "inverted": false
-        },
-        "clock": {
-            "showDate": true
-        }
-    },
-    "border": {
-        "rounding": 0
     },
     "launcher": {
-        "enableDangerousActions": true,
-        "showOnHover": true
+        "enabled": true,
+        "showOnHover": true,
+        "useFuzzy": {
+            "apps": true,
+            "wallpapers": true
+        }
     },
     "services": {
-        "lyricsBackend": "Auto",
-        "showLyrics": true
+        "defaultPlayer": "Strawberry",
+        "gpuType": "NVIDIA",
+        "useFahrenheit": true,
+        "useFahrenheitPerformance": false,
+        "useTwelveHourClock": false,
+        "weatherLocation": ""
     },
     "utilities": {
+        "enabled": true,
+        "maxToasts": 4,
         "toasts": {
+            "fullscreen": "off",
             "nowPlaying": true
         },
         "vpn": {
+            "enabled": false,
             "provider": [
                 {
-                    "displayName": "Cloudflare WARP",
-                    "enabled": true,
-                    "interface": "CloudflareWARP",
-                    "name": "warp"
+                    "displayName": "clodflar",
+                    "enabled": false,
+                    "interface": "Cloudflare-Warp",
+                    "name": "Cloudflare"
                 }
             ]
         }
