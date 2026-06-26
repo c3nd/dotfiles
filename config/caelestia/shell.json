@@ -160,6 +160,11 @@
             "layers": 0.4
         }
     },
+    "dashboard": {
+        "performance": {
+            "showGpu": true
+        }
+    },
     "launcher": {
         "enabled": true,
         "showOnHover": true,

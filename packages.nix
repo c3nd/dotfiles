@@ -3,6 +3,7 @@ with pkgs; [
     vim
     git
     kitty
+    starship
     llmfit
     app2unit
     upower

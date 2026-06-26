@@ -5,6 +5,10 @@ let
 in
 
 {
+  imports = [
+  ./modules/atomic-chat.nix
+  ];
+
   home.username = "kepler452";
   home.homeDirectory = "/home/kepler452";
   home.packages = with pkgs; [
@@ -30,6 +34,7 @@ in
       enable = true;
     };
   };
+  programs.atomic-chat.enable = true;
   xdg.configFile."caelestia"={
    source = create_symlink "${dotfiles}/caelestia";
    force = true;
