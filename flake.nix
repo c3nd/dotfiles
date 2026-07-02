@@ -25,29 +25,29 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, ... } @ inputs: {
+  outputs = { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, ... } @ inputs:
+  {
     nixosModules.cake-wallet = import ./modules/cake-wallet.nix;
+
     nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      specialArgs = {inherit inputs; };
+      specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
         ./modules/cake-wallet.nix {
-            programs.cake-wallet = {
-              enable = true;
-            };
-          }
+          programs.cake-wallet.enable = true;
+        }
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = {inherit inputs;};
+            extraSpecialArgs = { inherit inputs; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = {...}: {
-            imports = [
+              imports = [
                 ./home.nix
                 inputs.caelestia-shell.homeManagerModules.default
-              ] ;
+              ];
             };
             backupFileExtension = "HMbackup";
           };
@@ -56,3 +56,4 @@
     };
   };
 }
+

@@ -4,6 +4,8 @@ with pkgs; [
     git
     kitty
     starship
+    vulkan-loader
+    vulkan-tools
     llmfit
     app2unit
     upower
@@ -17,9 +19,9 @@ with pkgs; [
     gnumake
     pkg-config
     leveldb
+    zlib
     motrix-next
     nil
-    p7zip
     pavucontrol
     lshw
     foot
