@@ -2,6 +2,7 @@
 with pkgs; [
     vim
     git
+    gemini-cli
     kitty
     starship
     vulkan-loader

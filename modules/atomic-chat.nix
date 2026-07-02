@@ -13,7 +13,7 @@ let
       url = "https://github.com/AtomicBot-ai/Atomic-Chat/releases/download/v${cfg.version}/Atomic.Chat_${cfg.version}_amd64.AppImage";
       # Run with this hash once (or `nix-prefetch-url <url>`) to get the
       # real sha256, then paste it in here.
-      hash = "sha256-OsDi0FNyHAuBpOjwD6fr84hyD7e/vI9hUWi6E7y5HxI=";
+      hash = "sha256-B/gci7q7xWWsl7T6vwUza3pxDLO60GQenH91ZFp4BHI=";
     };
 
     # Libraries the Tauri/WebKitGTK app dlopen's at runtime. Without these
@@ -71,7 +71,7 @@ in
 
     version = mkOption {
       type = types.str;
-      default = "1.1.119";
+      default = "1.1.137";
       description = "Atomic Chat release tag (without the leading 'v') to fetch.";
     };
 
