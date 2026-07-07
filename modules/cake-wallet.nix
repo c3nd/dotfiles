@@ -1,3 +1,12 @@
+# Cake Wallet — NixOS module
+#
+# Builds the Cake Wallet GUI from the upstream binary release tarball and
+# installs it system-wide. Optional hardware-wallet (Trezor) udev rules are
+# enabled via `hardwareWallets`.
+#
+# Usage (in a NixOS config):
+#   programs.cake-wallet.enable = true;
+#   programs.cake-wallet.hardwareWallets = true;  # optional
 { config, lib, pkgs, inputs, ... }:
 
 with lib;

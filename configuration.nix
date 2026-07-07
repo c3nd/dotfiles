@@ -1,85 +1,54 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
+# Milkdromeda — NixOS system configuration
+#
+# Host:        Milkdromeda (x86_64-linux)
+# Desktop:     Hyprland + caelestia-shell (configured in home.nix)
+# Boot:        systemd-boot (EFI)
+#
+# This file only holds *system-level* settings. Per-user settings (shell,
+# dotfiles, user packages, caelestia) live in home.nix via Home Manager.
 { config, lib, pkgs, inputs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ./modules/qtengine.nix
-    ];
+  ##############################################################################
+  # Imports
+  ##############################################################################
+  imports = [
+    # Results of the hardware scan (filesystems, boot devices, CPU).
+    ./hardware-configuration.nix
+    # qtengine Qt theming module.
+    ./modules/qtengine.nix
+  ];
 
+  ##############################################################################
+  # Boot loader & kernel
+  ##############################################################################
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Use latest kernel.
+  # Run the latest available kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "Milkdromeda"; # Define your hostname.
+  ##############################################################################
+  # Networking
+  ##############################################################################
+  networking.hostName = "Milkdromeda";
 
-  # Configure network connections interactively with nmcli or nmtui.
+  # Manage network connections interactively with `nmcli` / `nmtui`.
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
+  # Firewall is disabled (single-user workstation behind a router).
+  networking.firewall.enable = false;
+
+  ##############################################################################
+  # Localization
+  ##############################################################################
   time.timeZone = "America/Phoenix";
 
-  # Configure the X11 windowing system
-
-  services.xserver= {
-    enable = true;
-    autoRepeatDelay = 200;
-    autoRepeatInterval = 35;
-  };
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-  services.upower.enable = true;
-  services.cloudflare-warp.enable=true;
-  services.xserver.videoDrivers = [
-    "nvidia"
-    "modesetting"
-  ];
-  # Enable sound.
-  services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.libinput.enable = true;
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-             "nvidia-x11"
-             "nvidia-settings"
-             "cloudflare-warp"
-             "xnviewmp"
-             "p7zip"
-             "nvidia-kernel-modules"
-           ];
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.kepler452= {
-    isNormalUser = true;
-     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-     packages = with pkgs; [
-       tree
-     ];
-   };
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-  programs.firefox.enable = true;
-  programs.fish.enable = true;
-  programs.hyprland = {
-    enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    # make sure to also set the portal package, so that they are in sync
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-  };
-  programs.qtengine = {
-    enable = true;
-  };
-  services.displayManager.ly.enable = true;
+  ##############################################################################
+  # Hardware
+  ##############################################################################
+  # NVIDIA GPU + Intel iGPU (Prime sync / Optimus).
   hardware.nvidia = {
     modesetting.enable = true;
     package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
@@ -92,57 +61,136 @@
       nvidiaBusId = "PCI:1:0:0";
     };
   };
-  hardware.graphics = {
-    enable = true;
-  };
+
+  # Enable the Mesa/OpenGL graphics stack.
+  hardware.graphics.enable = true;
+
+  # Bluetooth + drawing tablet support.
   hardware.bluetooth.enable = true;
-  hardware.opentabletdriver = {
-      enable = true;
+  hardware.opentabletdriver.enable = true;
+
+  ##############################################################################
+  # Display server & desktop
+  ##############################################################################
+  # XWayland + keyboard auto-repeat tuning.
+  services.xserver = {
+    enable = true;
+    autoRepeatDelay = 200;
+    autoRepeatInterval = 35;
   };
-  # List packages installed in system profile.
-  # You can use https://search.nixos.org/ to find more packages (and options).
-  environment.systemPackages =  import ./packages.nix { inherit pkgs; };
-  fonts= {
-    fontDir.enable = true;
-    enableGhostscriptFonts= true;
-     packages = with pkgs; [
-        nerd-fonts.jetbrains-mono
+
+  # Video drivers for the XWayland fallback.
+  services.xserver.videoDrivers = [
+    "nvidia"
+    "modesetting"
+  ];
+
+  # Hyprland compositor (pinned to the flake input so portals stay in sync).
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    # Keep the portal package in sync with the Hyprland package.
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+  };
+
+  # Login manager.
+  services.displayManager.ly.enable = true;
+
+  # Qt theming (qtengine module, imported above).
+  programs.qtengine.enable = true;
+
+  ##############################################################################
+  # Audio, power & printing
+  ##############################################################################
+  # PipeWire sound server (with PulseAudio compatibility shim).
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
+
+  # Power management daemon + CUPS printing.
+  services.upower.enable = true;
+  services.printing.enable = true;
+
+  # Cloudflare WARP VPN client.
+  services.cloudflare-warp.enable = true;
+
+  ##############################################################################
+  # Touchpad
+  ##############################################################################
+  # Enabled by default in most desktop managers, declared explicitly here.
+  services.libinput.enable = true;
+
+  ##############################################################################
+  # Users
+  ##############################################################################
+  users.users.kepler452 = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ]; # Enable `sudo` for the user.
+    packages = with pkgs; [
+      tree
     ];
   };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
+  ##############################################################################
+  # Nix settings
+  ##############################################################################
+  # Enable the experimental `nix-command` + `flakes` features.
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Allow unfree packages that this system relies on.
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      "nvidia-x11"
+      "nvidia-settings"
+      "cloudflare-warp"
+      "xnviewmp"
+      "p7zip"
+      "nvidia-kernel-modules"
+    ];
+
+  ##############################################################################
+  # System-wide programs
+  ##############################################################################
+  programs.firefox.enable = true;
+  programs.nix-ld.enable = true;
+  programs.fish.enable = true;
   programs.mtr.enable = true;
+
+  # GnuPG agent with SSH support (used as the SSH agent).
   programs.gnupg.agent = {
-     enable = true;
-     enableSSHSupport = true;
-   };
+    enable = true;
+    enableSSHSupport = true;
+  };
 
-  # List services that you want to enable:
-
-  #Enable the OpenSSH daemon.
+  ##############################################################################
+  # Services
+  ##############################################################################
+  # OpenSSH daemon.
   services.openssh.enable = true;
 
-  networking.firewall.enable = false;
+  ##############################################################################
+  # Fonts
+  ##############################################################################
+  fonts = {
+    fontDir.enable = true;
+    enableGhostscriptFonts = true;
+    packages = with pkgs; [
+      nerd-fonts.jetbrains-mono
+    ];
+  };
 
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "25.11"; # Did you read the comment?
+  ##############################################################################
+  # System packages
+  ##############################################################################
+  # Full list lives in packages.nix (grouped by category).
+  environment.systemPackages = import ./packages.nix { inherit pkgs; };
 
+  ##############################################################################
+  # State version
+  ##############################################################################
+  # The first NixOS version installed on this machine. Do NOT change unless
+  # you have manually migrated all affected application data.
+  # See `man configuration.nix` for details.
+  system.stateVersion = "25.11";
 }
-

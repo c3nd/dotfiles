@@ -7,6 +7,20 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent": {
+    "default_model": {
+      "provider": "Nous Research",
+      "model": "tencent/hy3:free",
+      "enable_thinking": false
+    },
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "language_models": {
+    "openai_compatible": {
+      
+    }
+  },
   "terminal": {
     "shell": {
       "program": "fish"

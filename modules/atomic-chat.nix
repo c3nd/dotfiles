@@ -1,3 +1,13 @@
+# Atomic Chat — Home Manager module
+#
+# Wraps the upstream Atomic Chat AppImage (Tauri/WebKitGTK) so it runs on NixOS.
+# The `hash` option intentionally defaults to `lib.fakeHash`; on the first
+# build Nix prints the *real* sha256 — paste it into `hash` and rebuild.
+#
+# Usage (in home.nix or a Home Manager config):
+#   programs.atomic-chat.enable = true;
+#   programs.atomic-chat.version = "1.1.137";  # optional override
+#   programs.atomic-chat.hash    = "sha256-...";  # set after first build
 { config, lib, pkgs, inputs, ... }:
 
 with lib;
