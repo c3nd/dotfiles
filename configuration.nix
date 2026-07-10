@@ -140,14 +140,26 @@
 
   # Allow unfree packages that this system relies on.
   nixpkgs.config.allowUnfreePredicate = pkg:
-    builtins.elem (lib.getName pkg) [
+    (builtins.elem (lib.getName pkg) [
       "nvidia-x11"
       "nvidia-settings"
       "cloudflare-warp"
       "xnviewmp"
       "p7zip"
       "nvidia-kernel-modules"
-    ];
+    ])
+    # CUDA toolkit components (unfree, CUDA EULA) — needed by the local
+    # TurboQuant llama.cpp + Whisper STT stack (services.llm-stack).
+    # Match by license so every cuda_*/libcu*/libnpp/… component is covered.
+    || (let
+          lics = let l = pkg.meta.license or [ ];
+                 in if builtins.isList l then l else [ l ];
+        in builtins.any
+             (l: (l.shortName or "") == "cudaEula"
+                 || (l.spdxId or "") == "LicenseRef-CUDA-EULA"
+                 || lib.hasInfix "EULA" (l.fullName or "")
+                 || lib.hasInfix "EULA" (l.shortName or ""))
+             lics);
 
   ##############################################################################
   # System-wide programs

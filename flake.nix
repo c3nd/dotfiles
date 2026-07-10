@@ -95,6 +95,12 @@
     nixosModules.pluely = import ./modules/pluely.nix;
 
     ############################################################################
+    # Standalone NixOS module: local TurboQuant llama.cpp + Whisper STT stack.
+    # Re-usable via `nixosModules.llm-stack`.
+    ############################################################################
+    nixosModules.llm-stack = import ./modules/llm-stack.nix;
+
+    ############################################################################
     # The system configuration for the `Milkdromeda` host.
     ############################################################################
     nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
@@ -118,6 +124,12 @@
         ./modules/kuroya.nix
         {
           programs.kuroya.enable = true;
+        }
+
+        # ---- Local TurboQuant LLM + Whisper STT stack (enabled below) -----
+        ./modules/llm-stack.nix
+        {
+          services.llm-stack.enable = true;
         }
 
         # ---- Antigravity apps (CLI + base app) ----------------------------
