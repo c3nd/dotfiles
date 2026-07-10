@@ -39,6 +39,7 @@ with pkgs;
   btop
   jq
   lshw
+  nnn
   lm_sensors
   trash-cli
   gnome-keyring

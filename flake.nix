@@ -60,13 +60,21 @@
       flake = false;
     };
 
+    # Pluely — Tauri 2 Cluely alternative (open-source, privacy-first).
+    # Consumed as a github flake input; its source is fetched into the store
+    # (pure-eval-legal). The HM module builds `pluely.packages.<sys>.default`.
+    pluely = {
+      url = "github:iamsrikanthnani/pluely";
+      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   ##############################################################################
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  { self, nixpkgs, home-manager, pluely, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -81,13 +89,19 @@
     nixosModules.kuroya = import ./modules/kuroya.nix;
 
     ############################################################################
+    # Standalone Home Manager module: Pluely (Tauri 2 Cluely alternative).
+    # Re-usable via `nixosModules.pluely` (built from the pluely flake input).
+    ############################################################################
+    nixosModules.pluely = import ./modules/pluely.nix;
+
+    ############################################################################
     # The system configuration for the `Milkdromeda` host.
     ############################################################################
     nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       # Pass the full inputs set down so modules can reach flake inputs
       # (e.g. cake-wallet-src, browsers, caelestia-shell).
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs pluely; };
 
       modules = [
         # ---- Core system config -------------------------------------------
@@ -118,7 +132,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = { inherit inputs; };
+            extraSpecialArgs = { inherit inputs pluely; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = { ... }: {

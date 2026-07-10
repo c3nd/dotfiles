@@ -22,6 +22,9 @@ in
     # AppImage-wrapped apps (enable via programs.<name>.enable below).
     ./modules/atomic-chat.nix
     ./modules/zcode.nix
+
+    # Pluely — open-source Cluely alternative (Tauri 2).
+    ./modules/pluely.nix
   ];
 
   ############################################################################
@@ -141,6 +144,13 @@ in
   ############################################################################
   # programs.atomic-chat.enable = true;
   # programs.zcode.enable = true;
+
+  ############################################################################
+  # Pluely — open-source Cluely alternative (Tauri 2)
+  #
+  # Built from the pluely flake input. Enable to put `pluely` on PATH.
+  ############################################################################
+  programs.pluely.enable = true;
 
   ############################################################################
   # State version
