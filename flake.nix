@@ -60,18 +60,13 @@
       flake = false;
     };
 
-    # meownotes — local-first meeting summarizer. Consumed as a *path* flake
-    # so its source is copied into the Nix store and reachable under pure
-    # evaluation (the HM module wires `meownotes.packages.<sys>.default`).
-    meownotes.url = "path:/home/kepler452/Projects/meownotes";
-    meownotes.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   ##############################################################################
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, meownotes, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -86,19 +81,13 @@
     nixosModules.kuroya = import ./modules/kuroya.nix;
 
     ############################################################################
-    # Standalone Home Manager module: local-first meeting summarizer.
-    # Re-usable via `nixosModules.meownotes` (built from ~/Projects/meownotes).
-    ############################################################################
-    nixosModules.meownotes = import ./modules/meownotes.nix;
-
-    ############################################################################
     # The system configuration for the `Milkdromeda` host.
     ############################################################################
     nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       # Pass the full inputs set down so modules can reach flake inputs
       # (e.g. cake-wallet-src, browsers, caelestia-shell).
-      specialArgs = { inherit inputs meownotes; };
+      specialArgs = { inherit inputs; };
 
       modules = [
         # ---- Core system config -------------------------------------------
@@ -129,7 +118,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = { inherit inputs meownotes; };
+            extraSpecialArgs = { inherit inputs; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = { ... }: {

@@ -22,9 +22,6 @@ in
     # AppImage-wrapped apps (enable via programs.<name>.enable below).
     ./modules/atomic-chat.nix
     ./modules/zcode.nix
-
-    # Local-first meeting summarizer (built from ~/Projects/meownotes source).
-    ./modules/meownotes.nix
   ];
 
   ############################################################################
@@ -144,15 +141,6 @@ in
   ############################################################################
   # programs.atomic-chat.enable = true;
   # programs.zcode.enable = true;
-
-  ############################################################################
-  # meownotes — local-first meeting summarizer
-  #
-  # Built from ~/Projects/meownotes. Enable to put `meownotes` on PATH and
-  # create the notes output dir.
-  ############################################################################
-  programs.meownotes.enable = true;
-  programs.meownotes.outputDir = "~/meownotes-notes";
 
   ############################################################################
   # State version
