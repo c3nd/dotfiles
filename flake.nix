@@ -52,65 +52,90 @@
       url = "https://github.com/cake-tech/cake_wallet/releases/download/v6.1.2/Cake_Wallet_v6.1.2_Linux.tar.xz";
       flake = false;
     };
+
+    # Kuroya code editor — source tree (non-flake source — `flake = false`).
+    # Pinned to the v0.1.6 release tag.
+    kuroya-src = {
+      url = "github:redmarklabscom/kuroya?ref=v0.1.6";
+      flake = false;
+    };
   };
 
   ##############################################################################
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-    { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, ... }@inputs:
-    {
-      ############################################################################
-      # Standalone NixOS module: builds the Cake Wallet package from a binary
-      # release. Re-usable via `nixosModules.cake-wallet`.
-      ############################################################################
-      nixosModules.cake-wallet = import ./modules/cake-wallet.nix;
+  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  {
+    ############################################################################
+    # Standalone NixOS module: builds the Cake Wallet package from a binary
+    # release. Re-usable via `nixosModules.cake-wallet`.
+    ############################################################################
+    nixosModules.cake-wallet = import ./modules/cake-wallet.nix;
 
-      ############################################################################
-      # The system configuration for the `Milkdromeda` host.
-      ############################################################################
-      nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        # Pass the full inputs set down so modules can reach flake inputs
-        # (e.g. cake-wallet-src, browsers, caelestia-shell).
-        specialArgs = { inherit inputs; };
+    ############################################################################
+    # Standalone NixOS module: builds the Kuroya Rust code editor from source.
+    # Re-usable via `nixosModules.kuroya`.
+    ############################################################################
+    nixosModules.kuroya = import ./modules/kuroya.nix;
 
-        modules = [
-          # ---- Core system config -------------------------------------------
-          ./configuration.nix
-          ./modules/qtengine.nix
+    ############################################################################
+    # Standalone Home Manager module: local-first meeting summarizer.
+    # Re-usable via `nixosModules.meownotes` (built from ~/Projects/meownotes).
+    ############################################################################
+    nixosModules.meownotes = import ./modules/meownotes.nix;
 
-          # ---- Cake Wallet package (enabled below) --------------------------
-          ./modules/cake-wallet.nix
-          {
-            programs.cake-wallet.enable = true;
-          }
+    ############################################################################
+    # The system configuration for the `Milkdromeda` host.
+    ############################################################################
+    nixosConfigurations.Milkdromeda = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      # Pass the full inputs set down so modules can reach flake inputs
+      # (e.g. cake-wallet-src, browsers, caelestia-shell).
+      specialArgs = { inherit inputs; };
 
-          # ---- Antigravity apps (CLI + base app) ----------------------------
-          {
-            environment.systemPackages = [
-              antigravity-nix.packages.x86_64-linux.default # Base App
-              antigravity-nix.packages.x86_64-linux.google-antigravity-cli # CLI
-            ];
-          }
+      modules = [
+        # ---- Core system config -------------------------------------------
+        ./configuration.nix
+        ./modules/qtengine.nix
 
-          # ---- Home Manager (manages the `kepler452` user) ------------------
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              extraSpecialArgs = { inherit inputs; };
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.kepler452 = { ... }: {
-                imports = [
-                  ./home.nix
-                  inputs.caelestia-shell.homeManagerModules.default
-                ];
-              };
-              backupFileExtension = "HMbackup";
+        # ---- Cake Wallet package (enabled below) --------------------------
+        ./modules/cake-wallet.nix
+        {
+          programs.cake-wallet.enable = true;
+        }
+
+        # ---- Kuroya code editor (enabled below) --------------------------
+        ./modules/kuroya.nix
+        {
+          programs.kuroya.enable = true;
+        }
+
+        # ---- Antigravity apps (CLI + base app) ----------------------------
+        {
+          environment.systemPackages = [
+            antigravity-nix.packages.x86_64-linux.default # Base App
+            antigravity-nix.packages.x86_64-linux.google-antigravity-cli # CLI
+          ];
+        }
+
+        # ---- Home Manager (manages the `kepler452` user) ------------------
+        home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            extraSpecialArgs = { inherit inputs; };
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.kepler452 = { ... }: {
+              imports = [
+                ./home.nix
+                inputs.caelestia-shell.homeManagerModules.default
+              ];
             };
-          }
-        ];
-      };
+            backupFileExtension = "HMbackup";
+          };
+        }
+      ];
+    };
     };
 }
