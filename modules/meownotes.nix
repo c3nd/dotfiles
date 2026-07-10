@@ -11,20 +11,18 @@
 # Usage (in home.nix):
 #   programs.meownotes.enable = true;
 #   programs.meownotes.outputDir = "~/meownotes-notes";  # optional override
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, meownotes, ... }:
 
 with lib;
 
 let
   cfg = config.programs.meownotes;
 
-  # Source tree of the tool (relative to $HOME). Adjust if you move it.
-  meownotesSrc = "${config.home.homeDirectory}/Projects/meownotes";
-
-  meownotes-pkg = pkgs.callPackage ../../Projects/meownotes/nixos/default.nix {
-    src = meownotesSrc;
-    python = pkgs.python3;
-  };
+  # The meownotes package comes from the `meownotes` flake input (a path
+  # flake at ~/Projects/meownotes). Its source is therefore an in-store path
+  # that pure evaluation is allowed to read — no ../../Projects/... host-path
+  # escape (which trips "access to absolute path … forbidden in pure mode").
+  meownotes-pkg = meownotes.packages.${pkgs.system}.default;
 in
 {
   options.programs.meownotes = {

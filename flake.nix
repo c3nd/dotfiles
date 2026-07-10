@@ -59,13 +59,19 @@
       url = "github:redmarklabscom/kuroya?ref=v0.1.6";
       flake = false;
     };
+
+    # meownotes — local-first meeting summarizer. Consumed as a *path* flake
+    # so its source is copied into the Nix store and reachable under pure
+    # evaluation (the HM module wires `meownotes.packages.<sys>.default`).
+    meownotes.url = "path:/home/kepler452/Projects/meownotes";
+    meownotes.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   ##############################################################################
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  { self, nixpkgs, home-manager, meownotes, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -92,7 +98,7 @@
       system = "x86_64-linux";
       # Pass the full inputs set down so modules can reach flake inputs
       # (e.g. cake-wallet-src, browsers, caelestia-shell).
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs meownotes; };
 
       modules = [
         # ---- Core system config -------------------------------------------
@@ -123,7 +129,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = { inherit inputs; };
+            extraSpecialArgs = { inherit inputs meownotes; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = { ... }: {

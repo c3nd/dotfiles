@@ -24,7 +24,7 @@ in
     ./modules/zcode.nix
 
     # Local-first meeting summarizer (built from ~/Projects/meownotes source).
-    ../modules/meownotes.nix
+    ./modules/meownotes.nix
   ];
 
   ############################################################################

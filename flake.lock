@@ -569,6 +569,23 @@
         "type": "github"
       }
     },
+    "kuroya-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782995247,
+        "narHash": "sha256-UPt34dH9OvWyDoVw2LRbGuE7FFN7rahOKpuuc7uiawU=",
+        "owner": "redmarklabscom",
+        "repo": "kuroya",
+        "rev": "0bcb964d391297700d243ee965381624d8bb4a54",
+        "type": "github"
+      },
+      "original": {
+        "owner": "redmarklabscom",
+        "ref": "v0.1.6",
+        "repo": "kuroya",
+        "type": "github"
+      }
+    },
     "m3shapes": {
       "flake": false,
       "locked": {
@@ -584,6 +601,23 @@
         "repo": "m3shapes",
         "rev": "bdc327b29f95394a732baf3c9b19658ba23755b6",
         "type": "github"
+      }
+    },
+    "meownotes": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783658324,
+        "narHash": "sha256-TCWW56gbrdV+SgdyILdXLUAPTT7NuVDNfP17ueRnPNY=",
+        "path": "/home/kepler452/Projects/meownotes",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/kepler452/Projects/meownotes",
+        "type": "path"
       }
     },
     "nixpkgs": {
@@ -706,6 +740,8 @@
         "cake-wallet-src": "cake-wallet-src",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
+        "kuroya-src": "kuroya-src",
+        "meownotes": "meownotes",
         "nixpkgs": "nixpkgs_2",
         "qtengine": "qtengine",
         "zen-browser": "zen-browser"
