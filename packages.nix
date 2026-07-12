@@ -44,6 +44,8 @@ with pkgs;
   trash-cli
   gnome-keyring
   cliphist
+  wl-screenrec
+  wf-recorder
   wl-clipboard
   hyprpicker
 

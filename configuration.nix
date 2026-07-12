@@ -164,7 +164,6 @@
   ##############################################################################
   # System-wide programs
   ##############################################################################
-  programs.firefox.enable = true;
   programs.nix-ld.enable = true;
   programs.fish.enable = true;
   programs.mtr.enable = true;
