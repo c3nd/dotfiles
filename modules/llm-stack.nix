@@ -181,7 +181,9 @@ in
     environment.systemPackages = [ turboquant-llama whisper-cuda ];
 
     # ---- General LLM server (TurboQuant llama.cpp) ----------------------
-    systemd.services.llama-server = {
+    # NOTE: named llm-stack-vl (not llama-server) to avoid colliding with
+    # nixpkgs' stock services.llama-cpp.server unit.
+    systemd.services.llm-stack-vl = {
       description = "TurboQuant llama.cpp server (LFM2.5-VL-1.6B text+vision, CUDA)";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
@@ -227,10 +229,10 @@ in
     };
 
     # ---- Optional MiniCPM-V 4.6 comparison server ----------------------
-    systemd.services.llama-server-minicpm = lib.mkIf cfg.enableComparison {
+    systemd.services.llm-stack-vl-minicpm = lib.mkIf cfg.enableComparison {
       description = "TurboQuant llama.cpp comparison server (MiniCPM-V 4.6 vision, CUDA)";
       wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" "llama-server.service" ];
+      after = [ "network.target" "llm-stack-vl.service" ];
       serviceConfig = {
         ExecStart = [
           "${turboquant-llama}/bin/llama-server"
