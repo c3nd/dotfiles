@@ -6,7 +6,7 @@ A real Hyprland layer-surface widget that mirrors the Cluely/Pluely floating
 No webview, no license — just GTK4 on Wayland with real Aero glass.
 
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
-Type, Enter -> sends to :8080, reply copied to clipboard (wl-copy, persistent).
+Type, Enter -> sends to :8080, reply shown in a dropdown (no clipboard).
 Buttons:  mic (dictate) . new (clear) . attach (image->vision) .
           history . clock . settings . send.
 
@@ -360,6 +360,7 @@ class Bar:
         return False
 
     def on_send(self, *a):
+        self._close_pop()
         prompt = self.entry.get_text().strip()
         if not prompt:
             return
@@ -369,11 +370,13 @@ class Bar:
                          daemon=True).start()
 
     def on_mic(self, *a):
+        self._close_pop()
         self.entry.set_placeholder_text("🎤 listening… speak now")
         self._set_busy(True)
         threading.Thread(target=self._dictate, daemon=True).start()
 
     def on_new(self, *a):
+        self._close_pop()
         self.entry.set_text("")
         self.entry.set_placeholder_text("Ask me anything…")
         self.entry.grab_focus()
@@ -546,11 +549,55 @@ class Bar:
 
     def _done(self, ans):
         self._set_busy(False)
-        ok = copy_text(ans)
-        msg = "copied to clipboard ✅" if ok else "reply ready (copy failed)"
-        self.entry.set_placeholder_text(msg)
-        # keep the bar up a beat so Ctrl+V works, then hide
-        GLib.timeout_add(3500, self._hide)
+        self._show_reply(ans)
+        return False
+
+    def _show_reply(self, ans):
+        """Show the model's answer in a little dropdown (popover) under the
+        bar instead of pushing it to the clipboard. Stays until Esc / new ask."""
+        self._close_pop()
+        pop = Gtk.Popover()
+        pop.set_parent(self.send_btn)
+        pop.set_has_arrow(True)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        vbox.add_css_class("pop")
+        vbox.set_size_request(360, -1)
+
+        title = Gtk.Label(label="✨ reply")
+        title.add_css_class("pop-title")
+        title.set_halign(Gtk.Align.START)
+        vbox.append(title)
+
+        lbl = Gtk.Label(label=ans)
+        lbl.set_wrap(True)
+        lbl.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        lbl.set_selectable(True)
+        lbl.set_xalign(0.0)
+        lbl.set_valign(Gtk.Align.START)
+        lbl.set_margin_start(6)
+        lbl.set_margin_end(6)
+
+        sc = Gtk.ScrolledWindow()
+        sc.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        sc.set_child(lbl)
+        sc.set_max_content_height(260)
+        sc.set_propagate_natural_height(True)
+        vbox.append(sc)
+
+        copy = Gtk.Button(label="📋 copy")
+        copy.add_css_class("round-btn")
+        copy.set_halign(Gtk.Align.END)
+        copy.connect("clicked",
+                     lambda b: (copy_text(ans), b.set_label("📋 copied ✅"),
+                                GLib.timeout_add(1500,
+                                                 lambda: b.set_label("📋 copy"))))
+        vbox.append(copy)
+
+        pop.set_child(vbox)
+        pop.popup()
+        self._pop = pop
+        self.entry.set_placeholder_text("reply shown — ask again, or Esc to close")
         return False
 
     def _set_busy(self, busy):
