@@ -23,11 +23,8 @@ in
     ./modules/atomic-chat.nix
     ./modules/zcode.nix
 
-    # Pluely — open-source Cluely alternative (Tauri 2).
-    ./modules/pluely.nix
-    # Pluely AppImage-wrapped release (works around the debug-webview bug in
-    # the Nix-built pluely package; the binary that ships on PATH comes from here).
-    ./modules/pluely-appimage.nix
+    # meowbar — native GTK4 layer-shell overlay chat bar (Pluely-style pill).
+    ./modules/meowbar.nix
   ];
 
   ############################################################################
@@ -158,20 +155,8 @@ in
   # programs.atomic-chat.enable = true;
   # programs.zcode.enable = true;
 
-  ############################################################################
-  # Pluely — open-source Cluely alternative (Tauri 2)
-  #
-  # Built from the pluely flake input. Enable to put `pluely` on PATH.
-  ############################################################################
-  # The Nix-built pluely package ships a debug webview (fails to embed its
-  # frontend → "Connection refused"). Keep the module imported for reference
-  # but DON'T put its broken binary on PATH.
-  programs.pluely.enable = false;
-
-  # Use the upstream AppImage release instead (modules/pluely-appimage.nix).
-  # Set `hash` after the first switch prints the real sha256.
-  programs.pluely-appimage.enable = true;
-  # programs.pluely-appimage.hash = "sha256-...";  # fill in after first build
+  # meowbar — native GTK4 overlay chat bar (Pluely-style pill, wired to :8080).
+  programs.meowbar.enable = true;
 
   ############################################################################
   # State version
