@@ -76,6 +76,13 @@ let
     # Tell tauri-build where to find the webkit/sys libs.
     PKG_CONFIG_PATH = "${pkgs.webkitgtk_4_1.dev}/lib/pkgconfig:${pkgs.libsoup_3.dev}/lib/pkgconfig";
 
+    # Build a RELEASE binary so Tauri embeds the bundled `dist/` frontend
+    # into the binary. Without this (default debug build) the webview tries
+    # to load from the Vite dev server at http://localhost:1420, which is
+    # never running in a Nix install -> "Connection refused" + the blurred
+    # error screen, and the React app (Settings included) never loads.
+    buildType = "release";
+
     # Skip the self-updater (we manage versions via Nix).
     CARGO_BUILD_FEATURES = "";
 
