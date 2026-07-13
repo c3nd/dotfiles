@@ -396,6 +396,7 @@ class Bar:
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.app.connect("activate", self.on_activate)
         self.app.connect("command-line", self.on_command_line)
+        self._activated = False
         self.app.run()
 
     def on_activate(self, app):
@@ -489,17 +490,22 @@ class Bar:
         self.entry.grab_focus()
         self._pop = None
         self._clock_source = None
+        self._activated = True
 
     def on_command_line(self, app, cmdline):
         # Re-invocation (SUPER+Space pressed while already running): forward to
         # the primary instance. `meowbar hide` forces HIDE; otherwise TOGGLE.
-        # This is what makes the keybind show/hide the SAME bar instead of
-        # spawning a duplicate.
+        # Defer to the GTK loop so on_activate (which builds self.win) has run.
+        # On the very first launch this also fires, but _activated is still
+        # False then, so we just let the normal activate show the bar.
         args = cmdline.get_arguments()
-        if len(args) > 1 and args[1] == "hide":
-            GLib.idle_add(self._hide)
-        else:
-            self.toggle()
+        force_hide = len(args) > 1 and args[1] == "hide"
+        def _do():
+            if not self._activated:
+                return False  # first launch: let activate show it normally
+            (self._hide() if force_hide else self.toggle())
+            return False
+        GLib.idle_add(_do)
         return 0
 
     def _icon_btn(self, glyph, tooltip, cb=None, send=False):
