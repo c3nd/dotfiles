@@ -136,22 +136,13 @@
   # Sudo: passwordless for system rebuild + systemctl (so the agent can apply
   # system-level fixes without an interactive password prompt). Scoped to the
   # two commands it actually needs — NOT blanket NOPASSWD:ALL.
+  # Use extraConfig (appends a literal line into /etc/sudoers, which always
+  # exists + is read) rather than extraRules (writes to /etc/sudoers.d/, which
+  # is absent on this box and would be silently ignored).
   ##############################################################################
-  security.sudo.extraRules = [
-    {
-      users = [ "kepler452" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/nixos-rebuild";
-          options = [ "NOPASSWD" "SETENV" ];
-        }
-        {
-          command = "/run/current-system/sw/bin/systemctl";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
+  security.sudo.extraConfig = ''
+    kepler452 ALL=(root) NOPASSWD: /run/current-system/sw/bin/nixos-rebuild, /run/current-system/sw/bin/systemctl
+  '';
 
   ##############################################################################
   # Nix settings
