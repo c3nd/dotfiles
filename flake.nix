@@ -116,9 +116,11 @@
         ./modules/llm-stack.nix
         {
           services.llm-stack.enable = true;
-          # A/B comparison endpoint: MiniCPM-V 4.6 on :8082 (OpenAI-compatible).
-          # VRAM has ~2.2GB headroom with LFM+whisper; this fills most of it.
-          services.llm-stack.enableComparison = true;
+          # A/B comparison endpoint (MiniCPM-V 4.6 on :8082) DISABLED:
+          # it eats the last ~2GB of VRAM on the P2000 and leaves whisper
+          # with no headroom (CUDA OOM at inference). Re-enable only if you
+          # want to A/B vision models and can spare the VRAM.
+          services.llm-stack.enableComparison = false;
         }
 
         # ---- Antigravity apps (CLI + base app) ----------------------------

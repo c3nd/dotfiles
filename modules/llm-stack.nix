@@ -205,7 +205,7 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = "${whisper-cuda}/bin/whisper-server --model ${whisper-model} --host 127.0.0.1 --port ${toString cfg.whisperPort}";
+        ExecStart = "${whisper-cuda}/bin/whisper-server --model ${whisper-model} --no-gpu --host 127.0.0.1 --port ${toString cfg.whisperPort}";
         Restart = "on-failure";
         RestartSec = 3;
         DynamicUser = true;
