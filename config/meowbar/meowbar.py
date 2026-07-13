@@ -8,7 +8,7 @@ No webview, no license — just GTK4 on Wayland with real Aero glass.
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
 Type, Enter -> sends to :8080, reply shown in a dropdown (no clipboard).
 Buttons:  mic (live-dictate) . new . attach (image->vision) . screenshot .
-          history . clock . settings . send.
+          record (screen) . history . clock . settings . send.
 
 Env overrides:
   MEOWBAR_URL       default http://localhost:8080/v1
@@ -134,6 +134,8 @@ CSS = """
             text-align: left; }
 .hist-row:hover { background: rgba(120,170,250,0.35); }
 .spin { color: #1a3a6a; }
+.rec-on { background: rgba(220,40,40,0.55); box-shadow: 0 0 12px rgba(255,40,40,0.7); }
+.rec-on:hover { background: rgba(240,60,60,0.7); }
 .pop-label { color: #0c1a2e; padding: 2px 6px; }
 .entry2 { background: rgba(255,255,255,0.85); border-radius: 8px;
           border: 1px solid rgba(80,120,190,0.4); color: #0c1a2e;
@@ -288,6 +290,50 @@ def take_screenshot():
         return None
 
 
+def start_screen_recorder(output_path, monitor="eDP-1", fps=60):
+    """Start gpu-screen-recorder on a monitor. Returns the Popen, or None if
+    the binary is missing. Recording continues until stop_screen_recorder()."""
+    if not shutil.which("gpu-screen-recorder"):
+        return None
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    try:
+        return subprocess.Popen(
+            ["gpu-screen-recorder", "-w", monitor, "-f", str(fps),
+             "-o", output_path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def stop_screen_recorder(proc):
+    """Stop a running recorder. Returns True if it was running."""
+    if proc is None:
+        return False
+    try:
+        proc.terminate()
+        proc.wait(timeout=5)
+    except Exception:  # noqa: BLE001
+        try:
+            proc.kill()
+        except Exception:  # noqa: BLE001
+            pass
+    return True
+
+
+def default_monitor():
+    """Best-guess monitor name for gpu-screen-recorder (Hyprland)."""
+    try:
+        out = subprocess.run(["hyprctl", "monitors", "-j"],
+                             capture_output=True, text=True, timeout=10).stdout
+        import json as _json
+        data = _json.loads(out)
+        if isinstance(data, list) and data:
+            return data[0].get("name", "eDP-1")
+    except Exception:  # noqa: BLE001
+        pass
+    return "eDP-1"
+
+
 def log_history(prompt, answer=""):
     try:
         with open(HIST, "a") as f:
@@ -379,12 +425,14 @@ class Bar:
         self.spinner.set_size_request(18, 18)
         self.spinner.add_css_class("spin")
 
+        self.rec_proc = None  # screen-recorder Popen when active
         self.mic_btn = self._icon_btn("🎤", "Dictate (live transcription)", self.on_mic)
         self.new_btn = self._icon_btn("✏️", "New chat", self.on_new)
         self.attach_btn = self._icon_btn("📎", "Attach image (vision)",
                                          self.on_attach)
         self.shot_btn = self._icon_btn("📷", "Screenshot → vision",
                                        self.on_screenshot)
+        self.rec_btn = self._icon_btn("🎬", "Record screen", self.on_record)
         self.hist_btn = self._icon_btn("📜", "History", self.on_history)
         self.clock_btn = self._icon_btn("🕘", "Clock", self.on_clock)
         self.set_btn = self._icon_btn("⚙", "Settings", self.on_settings)
@@ -396,6 +444,7 @@ class Bar:
         pill.append(self.spinner)
         pill.append(self.attach_btn)
         pill.append(self.shot_btn)
+        pill.append(self.rec_btn)
         pill.append(self.hist_btn)
         pill.append(self.clock_btn)
         pill.append(self.set_btn)
@@ -480,6 +529,33 @@ class Bar:
         self.entry.set_placeholder_text("📷 drag to select a region…")
         self._set_busy(True)
         threading.Thread(target=self._shoot, daemon=True).start()
+
+    def on_record(self, *a):
+        self._close_pop()
+        if self.rec_proc is not None:
+            # toggle -> stop
+            stop_screen_recorder(self.rec_proc)
+            self.rec_proc = None
+            self.rec_btn.remove_css_class("rec-on")
+            self.entry.set_placeholder_text("⏹ screen recording saved")
+        else:
+            out = os.path.expanduser(
+                "~/Videos/meow_rec_%d.mp4" % int(time.time()))
+            self.entry.set_text("")
+            self.entry.set_placeholder_text("🎬 recording… tap 🎬 again to stop")
+            self.rec_btn.add_css_class("rec-on")
+            threading.Thread(target=self._record_toggle, args=(out,),
+                             daemon=True).start()
+
+    def _record_toggle(self, out):
+        proc = start_screen_recorder(out, default_monitor(),
+                                     int(self.settings.get("fps", 60)))
+        if proc is None:
+            GLib.idle_add(lambda: (self.rec_btn.remove_css_class("rec-on"),
+                                   self.entry.set_placeholder_text(
+                                       "🎬 recorder missing"), False))
+            return
+        self.rec_proc = proc
 
     def _shoot(self):
         png = take_screenshot()
