@@ -93,6 +93,17 @@
     portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
+  # Desktop portals: Hyprland backend (for screen capture / gsr -w portal)
+  # plus the GTK backend (for file pickers if a GTK portal is ever needed).
+  xdg.portal = {
+    enable = true;
+    extraPortals = [
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ];
+    gtkUsePortal = true;
+  };
+
   # Login manager.
   services.displayManager.ly.enable = true;
 

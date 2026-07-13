@@ -290,16 +290,18 @@ def take_screenshot():
         return None
 
 
-def start_screen_recorder(output_path, monitor="eDP-1", fps=60):
-    """Start gpu-screen-recorder on a monitor. Returns the Popen, or None if
-    the binary is missing. Recording continues until stop_screen_recorder()."""
+def start_screen_recorder(output_path, monitor="portal", fps=60):
+    """Start gpu-screen-recorder. Uses the desktop-portal backend (``-w portal``)
+    so it works WITHOUT the cap_sys_admin cap that KMS capture needs. The user
+    approves the share in the portal dialog. Returns the Popen, or None if the
+    binary is missing. Recording continues until stop_screen_recorder()."""
     if not shutil.which("gpu-screen-recorder"):
         return None
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     try:
         return subprocess.Popen(
             ["gpu-screen-recorder", "-w", monitor, "-f", str(fps),
-             "-o", output_path],
+             "-restore-portal-session", "yes", "-o", output_path],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:  # noqa: BLE001
         return None
@@ -548,7 +550,8 @@ class Bar:
                              daemon=True).start()
 
     def _record_toggle(self, out):
-        proc = start_screen_recorder(out, default_monitor(),
+        # portal backend => no cap_sys_admin needed; user approves share dialog
+        proc = start_screen_recorder(out, "portal",
                                      int(self.settings.get("fps", 60)))
         if proc is None:
             GLib.idle_add(lambda: (self.rec_btn.remove_css_class("rec-on"),
