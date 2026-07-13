@@ -133,6 +133,27 @@
   };
 
   ##############################################################################
+  # Sudo: passwordless for system rebuild + systemctl (so the agent can apply
+  # system-level fixes without an interactive password prompt). Scoped to the
+  # two commands it actually needs — NOT blanket NOPASSWD:ALL.
+  ##############################################################################
+  security.sudo.extraRules = [
+    {
+      users = [ "kepler452" ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/nixos-rebuild";
+          options = [ "NOPASSWD" "SETENV" ];
+        }
+        {
+          command = "/run/current-system/sw/bin/systemctl";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
+  ##############################################################################
   # Nix settings
   ##############################################################################
   # Enable the experimental `nix-command` + `flakes` features.
