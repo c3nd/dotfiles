@@ -7,6 +7,7 @@
   # the `kepler452` user environment.
   #
   # Rebuild with:  sudo nixos-rebuild switch --flake .#Milkdromeda
+  # User-only changes:  home-manager switch --flake .#kepler452
   ##############################################################################
 
   description = "Milkdromeda System";
@@ -59,22 +60,13 @@
       url = "github:redmarklabscom/kuroya?ref=v0.1.6";
       flake = false;
     };
-
-    # Pluely — Tauri 2 Cluely alternative (open-source, privacy-first).
-    # Consumed as a github flake input; its source is fetched into the store
-    # (pure-eval-legal). The HM module builds `pluely.packages.<sys>.default`.
-    pluely = {
-      url = "github:iamsrikanthnani/pluely";
-      flake = false;
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   ##############################################################################
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, pluely, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -89,15 +81,9 @@
     nixosModules.kuroya = import ./modules/kuroya.nix;
 
     ############################################################################
-    # Standalone Home Manager module: Pluely (Tauri 2 Cluely alternative).
-    # Re-usable via `nixosModules.pluely` (built from the pluely flake input).
-    ############################################################################
-    nixosModules.pluely = import ./modules/pluely.nix;
-
-    ############################################################################
     # Standalone NixOS module: local TurboQuant llama.cpp + Whisper STT stack.
     # Re-usable via `nixosModules.llm-stack`.
-    ############################################################################
+    ########################################################################
     nixosModules.llm-stack = import ./modules/llm-stack.nix;
 
     ############################################################################
@@ -107,7 +93,7 @@
       system = "x86_64-linux";
       # Pass the full inputs set down so modules can reach flake inputs
       # (e.g. cake-wallet-src, browsers, caelestia-shell).
-      specialArgs = { inherit inputs pluely; };
+      specialArgs = { inherit inputs; };
 
       modules = [
         # ---- Core system config -------------------------------------------
@@ -120,7 +106,7 @@
           programs.cake-wallet.enable = true;
         }
 
-        # ---- Kuroya code editor (enabled below) --------------------------
+        # ---- Kuroya code editor (enabled below) ---------------------------
         ./modules/kuroya.nix
         {
           programs.kuroya.enable = true;
@@ -147,7 +133,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = { inherit inputs pluely; };
+            extraSpecialArgs = { inherit inputs; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = { ... }: {
@@ -161,5 +147,19 @@
         }
       ];
     };
+
+    ############################################################################
+    # Standalone Home Manager configuration for the `kepler452` user.
+    # Lets `home-manager switch --flake .#kepler452` apply user-only changes
+    # (no sudo / no full system rebuild needed).
+    ############################################################################
+    homeConfigurations."kepler452" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      extraSpecialArgs = { inherit inputs; };
+      modules = [
+        ./home.nix
+        inputs.caelestia-shell.homeManagerModules.default
+      ];
     };
+  };
 }

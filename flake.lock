@@ -651,22 +651,6 @@
         "type": "github"
       }
     },
-    "pluely": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1768351087,
-        "narHash": "sha256-juwiN6BaOil5M1uobqRphmvWKHDuBQxbLODjXSjH2Fg=",
-        "owner": "iamsrikanthnani",
-        "repo": "pluely",
-        "rev": "4fb23ac348ad087ef22920272012030398b6b155",
-        "type": "github"
-      },
-      "original": {
-        "owner": "iamsrikanthnani",
-        "repo": "pluely",
-        "type": "github"
-      }
-    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -741,7 +725,6 @@
         "hyprland": "hyprland",
         "kuroya-src": "kuroya-src",
         "nixpkgs": "nixpkgs_2",
-        "pluely": "pluely",
         "qtengine": "qtengine",
         "zen-browser": "zen-browser"
       }

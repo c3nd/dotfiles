@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 
 /*
   meowbar — native GTK4 layer-shell overlay chat bar (Pluely-style pill).
@@ -31,40 +31,36 @@
     };
   };
 
-  config = lib.mkIf config.programs.meowbar.enable let
-    # Minimal GTK4 + layer-shell runtime set (no libadwaita → avoids the
-    # duplicate GIcon/GdkPixbuf type-registration crash when LD_PRELOAD is used).
-    gtkRun = pkgs.symlinkJoin {
-      name = "meowbar-gtk-runtime";
-      paths = [
-        pkgs.gtk4 pkgs.gtk4-layer-shell pkgs.graphene pkgs.glib
-        pkgs.gobject-introspection pkgs.pango pkgs.gdk-pixbuf pkgs.harfbuzz
+  config = lib.mkIf config.programs.meowbar.enable (
+    let
+      # Every GTK/GObject typelib the script touches (cairo comes from
+      # gobject-introspection, PangoCairo from pango, HarfBuzz from harfbuzz…).
+      # No libadwaita → avoids the duplicate GIcon/GdkPixbuf type-registration
+      # crash when LD_PRELOAD is used for the layer-shell linking quirk.
+      typelibPath = pkgs.lib.makeSearchPath "lib/girepository-1.0" [
+        pkgs.gtk4.out pkgs.gtk4-layer-shell.out pkgs.graphene.out pkgs.glib.out
+        pkgs.gobject-introspection.out pkgs.pango.out pkgs.gdk-pixbuf.out pkgs.harfbuzz.out
       ];
-    };
-    # Every GTK/GObject typelib the script touches (cairo comes from
-    # gobject-introspection, PangoCairo from pango, HarfBuzz from harfbuzz…).
-    typelibPath = pkgs.lib.makeSearchPath "lib/girepository-1.0" [
-      pkgs.gtk4 pkgs.gtk4-layer-shell pkgs.graphene pkgs.glib
-      pkgs.gobject-introspection pkgs.pango pkgs.gdk-pixbuf pkgs.harfbuzz
-    ];
-    layerSo = "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so";
-    pyEnv = pkgs.python3.withPackages (p: [ p.pygobject3 p.pycairo p.requests ]);
-  in {
-    xdg.configFile."meowbar/meowbar.py" = {
-      source = ../../config/meowbar/meowbar.py;
-      executable = true;
-    };
+      layerSo = "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so";
+      pyEnv = pkgs.python3.withPackages (p: [ p.pygobject3 p.pycairo p.requests ]);
+    in
+    {
+      xdg.configFile."meowbar/meowbar.py" = {
+        source = ../config/meowbar/meowbar.py;
+        executable = true;
+      };
 
-    home.packages = [
-      (pkgs.writeShellScriptBin "meowbar" ''
-        export MEOWBAR_URL="${config.programs.meowbar.url}"
-        export MEOWBAR_MODEL="${config.programs.meowbar.model}"
-        export MEOWBAR_KEY="${config.programs.meowbar.key}"
-        export GDK_BACKEND=wayland
-        export GI_TYPELIB_PATH="${typelibPath}:$GI_TYPELIB_PATH"
-        export LD_PRELOAD="${layerSo} $LD_PRELOAD"
-        exec ${pyEnv}/bin/python3 "$HOME/.config/meowbar/meowbar.py"
-      '')
-    ];
-  };
+      home.packages = [
+        (pkgs.writeShellScriptBin "meowbar" ''
+          export MEOWBAR_URL="${config.programs.meowbar.url}"
+          export MEOWBAR_MODEL="${config.programs.meowbar.model}"
+          export MEOWBAR_KEY="${config.programs.meowbar.key}"
+          export GDK_BACKEND=wayland
+          export GI_TYPELIB_PATH="${typelibPath}:$GI_TYPELIB_PATH"
+          export LD_PRELOAD="${layerSo} $LD_PRELOAD"
+          exec ${pyEnv}/bin/python3 "$HOME/.config/meowbar/meowbar.py"
+        '')
+      ];
+    }
+  );
 }
