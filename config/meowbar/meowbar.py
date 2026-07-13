@@ -493,19 +493,17 @@ class Bar:
         self._activated = True
 
     def on_command_line(self, app, cmdline):
-        # Re-invocation (SUPER+Space pressed while already running): forward to
-        # the primary instance. `meowbar hide` forces HIDE; otherwise TOGGLE.
-        # Defer to the GTK loop so on_activate (which builds self.win) has run.
-        # On the very first launch this also fires, but _activated is still
-        # False then, so we just let the normal activate show the bar.
+        # With HANDLES_COMMAND_LINE, GApplication does NOT auto-activate, so we
+        # must present the window ourselves on the first launch. Later launches
+        # (the SUPER+Space keybind) toggle/hide the already-running instance.
         args = cmdline.get_arguments()
         force_hide = len(args) > 1 and args[1] == "hide"
-        def _do():
-            if not self._activated:
-                return False  # first launch: let activate show it normally
-            (self._hide() if force_hide else self.toggle())
-            return False
-        GLib.idle_add(_do)
+        if not self._activated:
+            # first launch: show the bar (on_activate builds + presents it)
+            self.app.activate()
+        else:
+            GLib.idle_add(lambda: (self._hide() if force_hide else self.toggle())
+                          or False)
         return 0
 
     def _icon_btn(self, glyph, tooltip, cb=None, send=False):
