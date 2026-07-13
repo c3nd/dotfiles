@@ -130,6 +130,9 @@
         ./modules/llm-stack.nix
         {
           services.llm-stack.enable = true;
+          # A/B comparison endpoint: MiniCPM-V 4.6 on :8082 (OpenAI-compatible).
+          # VRAM has ~2.2GB headroom with LFM+whisper; this fills most of it.
+          services.llm-stack.enableComparison = true;
         }
 
         # ---- Antigravity apps (CLI + base app) ----------------------------
