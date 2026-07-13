@@ -7,7 +7,7 @@ No webview, no license — just GTK4 on Wayland with real Aero glass.
 
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
 Type, Enter -> sends to :8080, reply shown in a dropdown (no clipboard).
-Buttons:  mic (dictate) . new (clear) . attach (image->vision) .
+Buttons:  mic (live-dictate) . new . attach (image->vision) . screenshot .
           history . clock . settings . send.
 
 Env overrides:
@@ -23,6 +23,7 @@ import base64
 import time
 import threading
 import subprocess
+import shutil
 
 import gi
 import urllib.request
@@ -196,16 +197,93 @@ def transcribe(wav_path):
 
 
 def record_audio(seconds=4, source=None):
-    """Record from default PipeWire source via pw-record -> 16k mono wav."""
+    """Record mic -> 16k mono wav. Use ffmpeg (pulse) — pw-record produces a
+    wav header whisper.cpp rejects. Returns wav path or None."""
     wav = "/tmp/meow_mic.wav"
     src = source or default_mic_source()
     try:
+        # ffmpeg -f pulse -i <node> -t N writes a clean RIFF wav whisper likes
         subprocess.run(
-            ["pw-record", "--target", src, "--rate", "16000",
-             "--channels", "1", wav],
+            ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-t", str(seconds),
+             "-ar", "16000", "-ac", "1", wav],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            timeout=seconds + 6)
-        return wav if os.path.exists(wav) and os.path.getsize(wav) > 0 else None
+            timeout=seconds + 8, check=True)
+        return wav if os.path.exists(wav) and os.path.getsize(wav) > 44 else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def record_and_stream(seconds, source, on_partial):
+    """Record via ffmpeg while streaming interim transcripts into the box.
+    Chunks the live wav every ~1.5s and sends each to whisper; the last
+    partial is returned (the full final transcript)."""
+    wav = "/tmp/meow_mic.wav"
+    src = source or default_mic_source()
+    # start ffmpeg writing continuously
+    proc = subprocess.Popen(
+        ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-ar", "16000", "-ac", "1", wav],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    last = ""
+    elapsed = 0.0
+    chunk = 1.5
+    try:
+        while proc.poll() is None and elapsed < seconds + 1:
+            time.sleep(chunk)
+            elapsed += chunk
+            if os.path.exists(wav) and os.path.getsize(wav) > 44:
+                txt = transcribe(wav)
+                txt = txt.strip()
+                if txt and txt != last:
+                    last = txt
+                    on_partial(txt)
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=4)
+        except Exception:  # noqa: BLE001
+            proc.kill()
+    # final clean pass
+    if os.path.exists(wav) and os.path.getsize(wav) > 44:
+        final = transcribe(wav).strip()
+        if final:
+            last = final
+            on_partial(final)
+    return last
+
+
+def pick_file(title="Select a file", mime=None):
+    """Open a file picker without xdg-desktop-portal (which has no backend
+    here, so Gtk.FileDialog fails). Uses zenity if present, else a tiny
+    GTK FileDialog fallback. Returns a path or None."""
+    if shutil.which("zenity"):
+        cmd = ["zenity", "--file-selection", "--title", title]
+        if mime:
+            cmd += ["--file-filter", mime]
+        try:
+            out = subprocess.run(cmd, capture_output=True, text=True,
+                                  timeout=30).stdout.strip()
+            return out or None
+        except Exception:  # noqa: BLE001
+            return None
+    # fallback: GTK FileDialog (only works if a portal backend exists)
+    return None
+
+
+def take_screenshot():
+    """Region screenshot via grim + slurp -> png. Returns path or None."""
+    png = os.path.expanduser("~/Pictures/meow_shot_%d.png"
+                             % int(time.time()))
+    os.makedirs(os.path.dirname(png), exist_ok=True)
+    try:
+        # slurp prints a geometry like "x,y,w,h"; feed to grim -g
+        geo = subprocess.run(["slurp"], capture_output=True, text=True,
+                              timeout=30).stdout.strip()
+        if not geo:
+            return None
+        subprocess.run(["grim", "-g", geo, png],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       timeout=30, check=True)
+        return png if os.path.exists(png) else None
     except Exception:  # noqa: BLE001
         return None
 
@@ -301,10 +379,12 @@ class Bar:
         self.spinner.set_size_request(18, 18)
         self.spinner.add_css_class("spin")
 
-        self.mic_btn = self._icon_btn("🎤", "Dictate (mic)", self.on_mic)
+        self.mic_btn = self._icon_btn("🎤", "Dictate (live transcription)", self.on_mic)
         self.new_btn = self._icon_btn("✏️", "New chat", self.on_new)
         self.attach_btn = self._icon_btn("📎", "Attach image (vision)",
                                          self.on_attach)
+        self.shot_btn = self._icon_btn("📷", "Screenshot → vision",
+                                       self.on_screenshot)
         self.hist_btn = self._icon_btn("📜", "History", self.on_history)
         self.clock_btn = self._icon_btn("🕘", "Clock", self.on_clock)
         self.set_btn = self._icon_btn("⚙", "Settings", self.on_settings)
@@ -315,6 +395,7 @@ class Bar:
         pill.append(self.entry)
         pill.append(self.spinner)
         pill.append(self.attach_btn)
+        pill.append(self.shot_btn)
         pill.append(self.hist_btn)
         pill.append(self.clock_btn)
         pill.append(self.set_btn)
@@ -383,27 +464,33 @@ class Bar:
 
     def on_attach(self, *a):
         self._close_pop()
-        dlg = Gtk.FileDialog()
-        dlg.set_title("Attach image")
-        f = Gtk.FileFilter()
-        f.set_name("Images")
-        for m in ("image/png", "image/jpeg", "image/webp"):
-            f.add_mime_type(m)
-        dlg.set_default_filter(f)
-        dlg.open(self.win, None, self._attach_resp)
+        path = pick_file("Attach image",
+                         mime="Image files (*.png;*.jpg;*.jpeg;*.webp)")
+        if not path:
+            self.entry.set_placeholder_text("📎 attach cancelled")
+            return
+        prompt = self.entry.get_text().strip() or "What's in this image?"
+        self.entry.set_text("")
+        self._set_busy(True)
+        threading.Thread(target=self._work, args=(prompt, path),
+                         daemon=True).start()
 
-    def _attach_resp(self, dlg, res):
-        try:
-            file = dlg.open_finish(res)
-        except Exception:  # noqa: BLE001
-            file = None
-        if file is not None:
-            path = file.get_path()
-            prompt = self.entry.get_text().strip() or "What's in this image?"
-            self.entry.set_text("")
-            self._set_busy(True)
-            threading.Thread(target=self._work, args=(prompt, path),
-                             daemon=True).start()
+    def on_screenshot(self, *a):
+        self._close_pop()
+        self.entry.set_placeholder_text("📷 drag to select a region…")
+        self._set_busy(True)
+        threading.Thread(target=self._shoot, daemon=True).start()
+
+    def _shoot(self):
+        png = take_screenshot()
+        if not png:
+            GLib.idle_add(self._dictate_done, "")
+            GLib.idle_add(lambda: self.entry.set_placeholder_text(
+                "📷 screenshot cancelled/failed"))
+            return
+        prompt = self.entry.get_text().strip() or "What's in this screenshot?"
+        self.entry.set_text("")
+        self._work(prompt, png)
 
     def on_history(self, *a):
         self._close_pop()
@@ -527,9 +614,16 @@ class Bar:
     # ---- workers ----------------------------------------------------------
     def _dictate(self):
         secs = int(self.settings.get("record_seconds", 4) or 4)
-        wav = record_audio(secs, self.settings.get("mic_source"))
-        text = transcribe(wav) if wav else ""
+        # stream interim transcripts into the box as the user speaks
+        text = record_and_stream(
+            secs, self.settings.get("mic_source"),
+            lambda t: GLib.idle_add(self._live_text, t))
         GLib.idle_add(self._dictate_done, text)
+
+    def _live_text(self, t):
+        self.entry.set_text(t)
+        self.entry.set_position(-1)
+        return False
 
     def _dictate_done(self, text):
         self._set_busy(False)

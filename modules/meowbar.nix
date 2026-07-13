@@ -52,9 +52,13 @@
 
       home.packages = [
         # runtime deps the bar actually shells out to:
-        pkgs.ffmpeg          # audio capture / conversion (user-requested)
-        pkgs.pipewire        # pw-record (mic capture)
+        pkgs.ffmpeg          # audio capture / conversion (mic recording)
+        pkgs.pipewire        # pw-record (mic capture fallback)
         pkgs.wl-clipboard    # wl-copy (persistent clipboard)
+        pkgs.zenity         # file picker (no portal backend needed)
+        pkgs.grim           # region screenshots
+        pkgs.slurp          # region selector for grim
+        pkgs.gpu-screen-recorder  # GPU screen recorder (user-requested)
         (pkgs.writeShellScriptBin "meowbar" ''
           export MEOWBAR_URL="${config.programs.meowbar.url}"
           export MEOWBAR_MODEL="${config.programs.meowbar.model}"
