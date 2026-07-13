@@ -3,22 +3,24 @@
 
 A real Hyprland layer-surface widget that mirrors the Cluely/Pluely floating
 "Ask me anything..." bar, but talks to your local llm-stack LFM on :8080.
-No webview, no $120 license — just GTK4 on Wayland with real Aero glass
-(translucent window + Hyprland backdrop blur + glossy highlight).
+No webview, no license — just GTK4 on Wayland with real Aero glass.
 
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
-Type, Enter → sends to :8080, reply copied to clipboard.
-Buttons:  mic (dictate) · new (clear) · attach (image→vision) · history · settings.
+Type, Enter -> sends to :8080, reply copied to clipboard (wl-copy, persistent).
+Buttons:  mic (dictate) . new (clear) . attach (image->vision) .
+          history . clock . settings . send.
 
 Env overrides:
-  MEOWBAR_URL     default http://localhost:8080/v1
-  MEOWBAR_MODEL   default LFM2.5-VL-1.6B
-  MEOWBAR_KEY     default sk-local
+  MEOWBAR_URL       default http://localhost:8080/v1
+  MEOWBAR_MODEL     default LFM2.5-VL-1.6B
+  MEOWBAR_KEY       default sk-local
+  MEOWBAR_WHISPER   default http://localhost:8081/inference
 """
 import os
 import sys
 import json
 import base64
+import time
 import threading
 import subprocess
 
@@ -37,10 +39,57 @@ WHISPER = os.environ.get("MEOWBAR_WHISPER", "http://localhost:8081/inference")
 HIST = os.path.expanduser("~/.cache/meowbar/history.jsonl")
 os.makedirs(os.path.dirname(HIST), exist_ok=True)
 
+CONFIG = os.path.expanduser("~/.config/meowbar/config.json")
+SETTINGS_DEFAULT = {
+    "model": MODEL,
+    "endpoint": URL,
+    "mic_source": "",   # empty => auto-detect first Audio/Source
+    "record_seconds": 4,
+}
+
+
+def load_settings():
+    s = dict(SETTINGS_DEFAULT)
+    try:
+        with open(CONFIG) as f:
+            s.update(json.load(f))
+    except Exception:
+        pass
+    return s
+
+
+def save_settings(s):
+    try:
+        with open(CONFIG, "w") as f:
+            json.dump(s, f, indent=2)
+    except Exception:
+        pass
+
+
+def default_mic_source():
+    """Pick the first PipeWire audio source (robust on NixOS/pipewire)."""
+    try:
+        out = subprocess.run(
+            ["pw-cli", "list-objects", "Node"],
+            capture_output=True, text=True, timeout=8).stdout
+        cur = None
+        for line in out.splitlines():
+            line = line.strip()
+            if line.startswith("id ") and "Node/3" in line:
+                cur = {}
+            elif cur is not None:
+                if "node.name" in line:
+                    cur["name"] = line.split("=", 1)[-1].strip().strip('"')
+                if "media.class" in line:
+                    cur["cls"] = line.split("=", 1)[-1].strip().strip('"')
+                    if cur.get("cls") == "Audio/Source" and cur.get("name"):
+                        return cur["name"]
+    except Exception:
+        pass
+    return "alsa_input.pci-0000_00_1f.3.analog-stereo"
+
+
 # ---- Windows 7 Aero glass -------------------------------------------------
-# Translucent window + Hyprland backdrop blur + glossy top highlight + 1px
-# light-blue glass border. The blur is done by the compositor (decoration:
-# blur enabled), so we only need an alpha < 1 background.
 CSS = """
 .meowbar-pill {
   background: linear-gradient(to bottom,
@@ -54,7 +103,6 @@ CSS = """
               0 8px 30px rgba(20,40,80,0.45),
               inset 0 1px 0 rgba(255,255,255,0.75);
 }
-/* glossy top sheen */
 .meowbar-gloss {
   background: linear-gradient(to bottom,
               rgba(255,255,255,0.55), rgba(255,255,255,0.0) 60%);
@@ -77,25 +125,34 @@ CSS = """
 .send:hover { background: linear-gradient(to bottom,
               rgba(180,222,255,1.0), rgba(95,165,250,1.0)); }
 .send:disabled { opacity: 0.55; }
-.pop { background: rgba(225,240,255,0.92); border-radius: 14px;
+.pop { background: rgba(225,240,255,0.95); border-radius: 14px;
        border: 1px solid rgba(255,255,255,0.7);
-       box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px; }
+       box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px; min-width: 240px; }
 .pop-title { font-weight: 700; color: #0c1a2e; margin: 2px 6px 8px; }
-.hist-row { padding: 7px 10px; border-radius: 8px; color: #0c1a2e; }
+.hist-row { padding: 7px 10px; border-radius: 8px; color: #0c1a2e;
+            text-align: left; }
 .hist-row:hover { background: rgba(120,170,250,0.35); }
 .spin { color: #1a3a6a; }
+.pop-label { color: #0c1a2e; padding: 2px 6px; }
+.entry2 { background: rgba(255,255,255,0.85); border-radius: 8px;
+          border: 1px solid rgba(80,120,190,0.4); color: #0c1a2e;
+          padding: 6px 10px; }
 """
 
 # ---- backend calls --------------------------------------------------------
 def chat(prompt, image_path=None):
     content = [{"type": "text", "text": prompt}]
     if image_path:
-        with open(image_path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-        ext = image_path.rsplit(".", 1)[-1].lower()
-        mime = "image/png" if ext in ("png",) else "image/jpeg" if ext in ("jpg", "jpeg") else "image/webp"
-        content.append({"type": "image_url",
-                        "image_url": {"url": f"data:{mime};base64,{b64}"}})
+        try:
+            with open(image_path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode()
+            ext = image_path.rsplit(".", 1)[-1].lower()
+            mime = ("image/png" if ext == "png" else
+                    "image/jpeg" if ext in ("jpg", "jpeg") else "image/webp")
+            content.append({"type": "image_url",
+                            "image_url": {"url": f"data:{mime};base64,{b64}"}})
+        except Exception:
+            pass
     body = json.dumps({
         "model": MODEL,
         "messages": [{"role": "user", "content": content}],
@@ -108,43 +165,58 @@ def chat(prompt, image_path=None):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=90) as r:
+        with urllib.request.urlopen(req, timeout=120) as r:
             resp = json.loads(r.read().decode())
         return resp["choices"][0]["message"]["content"].strip()
     except Exception as e:  # noqa: BLE001
         return f"nya~ error: {e}"
 
+
 def transcribe(wav_path):
+    """whisper.cpp /inference wants multipart form 'file=' (proven working)."""
+    if not wav_path or not os.path.exists(wav_path):
+        return ""
+    boundary = "----meowbar" + os.urandom(16).hex()
+    with open(wav_path, "rb") as f:
+        data = f.read()
+    head = (f'--{boundary}\r\n'
+            f'Content-Disposition: form-data; name="file"; '
+            f'filename="voice.wav"\r\n'
+            f'Content-Type: audio/wav\r\n\r\n').encode()
+    payload = head + data + f'\r\n--{boundary}--\r\n'.encode()
+    req = urllib.request.Request(
+        WHISPER, data=payload,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST")
     try:
-        with open(wav_path, "rb") as f:
-            data = f.read()
-        req = urllib.request.Request(
-            WHISPER, data=data,
-            headers={"Content-Type": "application/octet-stream"},
-            method="POST")
         with urllib.request.urlopen(req, timeout=60) as r:
             return r.read().decode().strip()
-    except Exception as e:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         return ""
 
-def record_audio(seconds=4):
-    """Record from the default Pulse source via ffmpeg → 16k mono wav."""
+
+def record_audio(seconds=4, source=None):
+    """Record from default PipeWire source via pw-record -> 16k mono wav."""
     wav = "/tmp/meow_mic.wav"
+    src = source or default_mic_source()
     try:
         subprocess.run(
-            ["ffmpeg", "-y", "-f", "pulse", "-i", "default",
-             "-t", str(seconds), "-ar", "16000", "-ac", "1", wav],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=seconds + 5)
+            ["pw-record", "--target", src, "--rate", "16000",
+             "--channels", "1", wav],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=seconds + 6)
         return wav if os.path.exists(wav) and os.path.getsize(wav) > 0 else None
     except Exception:  # noqa: BLE001
         return None
 
-def log_history(prompt):
+
+def log_history(prompt, answer=""):
     try:
         with open(HIST, "a") as f:
-            f.write(json.dumps({"q": prompt}) + "\n")
-    except Exception:  # noqa: BLE001
+            f.write(json.dumps({"q": prompt, "a": answer}) + "\n")
+    except Exception:
         pass
+
 
 def read_history(limit=12):
     try:
@@ -154,16 +226,38 @@ def read_history(limit=12):
                 line = line.strip()
                 if line:
                     try:
-                        rows.append(json.loads(line)["q"])
+                        rows.append(json.loads(line))
                     except Exception:
                         pass
         return rows[-limit:][::-1]
     except FileNotFoundError:
         return []
 
+
+def copy_text(text):
+    """Copy to the compositor-persistent clipboard (wl-copy) so it survives
+    the bar hiding. Falls back to the GTK surface clipboard."""
+    ok = False
+    try:
+        subprocess.run(["wl-copy"], input=text.encode(),
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       timeout=5)
+        ok = True
+    except Exception:  # noqa: BLE001
+        ok = False
+    try:
+        Gdk.Display.get_default().get_clipboard().set(text)
+    except Exception:  # noqa: BLE001
+        pass
+    return ok
+
+
 # ---- the bar --------------------------------------------------------------
 class Bar:
     def __init__(self):
+        self.settings = load_settings()
+        if not self.settings.get("mic_source"):
+            self.settings["mic_source"] = default_mic_source()
         self.app = Gtk.Application(application_id="me.c3nd.meowbar")
         self.app.connect("activate", self.on_activate)
         self.app.run()
@@ -190,7 +284,6 @@ class Bar:
             Gdk.Display.get_default(), css,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-        # glossy overlay sits behind the controls
         pill = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         pill.add_css_class("meowbar-pill")
         pill.set_valign(Gtk.Align.CENTER)
@@ -208,17 +301,25 @@ class Bar:
         self.spinner.set_size_request(18, 18)
         self.spinner.add_css_class("spin")
 
-        pill.append(self._icon_btn("🎤", "Dictate (mic)", self.on_mic))
-        pill.append(self._icon_btn("✏️", "New chat", self.on_new))
+        self.mic_btn = self._icon_btn("🎤", "Dictate (mic)", self.on_mic)
+        self.new_btn = self._icon_btn("✏️", "New chat", self.on_new)
+        self.attach_btn = self._icon_btn("📎", "Attach image (vision)",
+                                         self.on_attach)
+        self.hist_btn = self._icon_btn("📜", "History", self.on_history)
+        self.clock_btn = self._icon_btn("🕘", "Clock", self.on_clock)
+        self.set_btn = self._icon_btn("⚙", "Settings", self.on_settings)
+        self.send_btn = self._icon_btn("➤", "Send", self.on_send, send=True)
+
+        pill.append(self.mic_btn)
+        pill.append(self.new_btn)
         pill.append(self.entry)
         pill.append(self.spinner)
-        pill.append(self._icon_btn("📎", "Attach image (vision)", self.on_attach))
-        pill.append(self._icon_btn("🕘", "History", self.on_history))
-        pill.append(self._icon_btn("⚙", "Settings", self.on_settings))
-        self.send_btn = self._icon_btn("➤", "Send", self.on_send, send=True)
+        pill.append(self.attach_btn)
+        pill.append(self.hist_btn)
+        pill.append(self.clock_btn)
+        pill.append(self.set_btn)
         pill.append(self.send_btn)
 
-        # gloss overlay (pure decoration, ignores pointer)
         gloss = Gtk.Box()
         gloss.add_css_class("meowbar-gloss")
         gloss.set_can_target(False)
@@ -234,6 +335,7 @@ class Bar:
         self.win.present()
         self.entry.grab_focus()
         self._pop = None
+        self._clock_source = None
 
     def _icon_btn(self, glyph, tooltip, cb=None, send=False):
         btn = Gtk.Button()
@@ -251,6 +353,10 @@ class Bar:
         if keyval == Gdk.KEY_Escape:
             self._hide()
             return True
+        if state & Gdk.ModifierType.CONTROL_MASK:
+            if keyval in (Gdk.KEY_l, Gdk.KEY_L):
+                self.on_new()
+                return True
         return False
 
     def on_send(self, *a):
@@ -273,44 +379,50 @@ class Bar:
         self.entry.grab_focus()
 
     def on_attach(self, *a):
-        dlg = Gtk.FileChooserDialog(
-            title="Attach image", transient_for=self.win,
-            action=Gtk.FileChooserAction.OPEN)
-        dlg.add_button("Cancel", Gtk.ResponseType.CANCEL)
-        dlg.add_button("Attach", Gtk.ResponseType.ACCEPT)
-        f = Gtk.FileFilter(); f.set_name("Images")
+        self._close_pop()
+        dlg = Gtk.FileDialog()
+        dlg.set_title("Attach image")
+        f = Gtk.FileFilter()
+        f.set_name("Images")
         for m in ("image/png", "image/jpeg", "image/webp"):
             f.add_mime_type(m)
-        dlg.add_filter(f)
-        dlg.connect("response", self._attach_resp)
-        dlg.show()
+        dlg.set_default_filter(f)
+        dlg.open(self.win, None, self._attach_resp)
 
-    def _attach_resp(self, dlg, resp):
-        if resp == Gtk.ResponseType.ACCEPT:
-            path = dlg.get_file().get_path()
+    def _attach_resp(self, dlg, res):
+        try:
+            file = dlg.open_finish(res)
+        except Exception:  # noqa: BLE001
+            file = None
+        if file is not None:
+            path = file.get_path()
             prompt = self.entry.get_text().strip() or "What's in this image?"
             self.entry.set_text("")
             self._set_busy(True)
             threading.Thread(target=self._work, args=(prompt, path),
                              daemon=True).start()
-        dlg.destroy()
 
     def on_history(self, *a):
         self._close_pop()
         pop = Gtk.Popover()
-        pop.set_parent(self.win)
+        pop.set_parent(self.hist_btn)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         box.add_css_class("pop")
-        box.append(Gtk.Label(label="Recent asks"))
-        box.children()[-1].add_css_class("pop-title")
+        title = Gtk.Label(label="Recent asks")
+        title.add_css_class("pop-title")
+        box.append(title)
         rows = read_history()
         if not rows:
             box.append(Gtk.Label(label="(none yet)"))
-        for q in rows:
-            row = Gtk.Button(label=(q[:48] + "…") if len(q) > 48 else q)
-            row.add_css_class("hist-row")
-            row.connect("clicked", lambda b, qq=q: self._use_hist(qq, pop))
-            box.append(row)
+        else:
+            for item in rows:
+                q = item.get("q", "")
+                row = Gtk.Button(
+                    label=(q[:48] + "…") if len(q) > 48 else q)
+                row.add_css_class("hist-row")
+                row.connect("clicked",
+                            lambda b, qq=q: self._use_hist(qq, pop))
+                box.append(row)
         pop.set_child(box)
         pop.popup()
         self._pop = pop
@@ -320,27 +432,88 @@ class Bar:
         self.entry.grab_focus()
         pop.popdown()
 
-    def on_settings(self, *a):
+    def on_clock(self, *a):
         self._close_pop()
         pop = Gtk.Popover()
-        pop.set_parent(self.win)
+        pop.set_parent(self.clock_btn)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         box.add_css_class("pop")
-        box.append(Gtk.Label(label="meowbar"))
+        tlabel = Gtk.Label()
+        tlabel.add_css_class("pop-title")
+        dlabel = Gtk.Label()
+        dlabel.add_css_class("pop-label")
+        box.append(Gtk.Label(label="🕘 now"))
         box.children()[-1].add_css_class("pop-title")
-        for line in (f"model: {MODEL}", f"endpoint: {URL}",
-                     "reply → clipboard", "ESC to hide"):
-            box.append(Gtk.Label(label=line))
-        clr = Gtk.Button(label="Clear history")
-        clr.add_css_class("round-btn")
-        clr.connect("clicked", lambda b: (open(HIST, "w").close(),
-                                          self._close_pop()))
-        box.append(clr)
+        box.append(tlabel)
+        box.append(dlabel)
         pop.set_child(box)
         pop.popup()
         self._pop = pop
 
+        def tick():
+            now = time.localtime()
+            tlabel.set_label(time.strftime("%H:%M:%S", now))
+            dlabel.set_label(time.strftime("%A %d %B %Y", now))
+            return True
+        tick()
+        if self._clock_source:
+            GLib.source_remove(self._clock_source)
+        self._clock_source = GLib.timeout_add(1000, tick)
+
+    def on_settings(self, *a):
+        self._close_pop()
+        pop = Gtk.Popover()
+        pop.set_parent(self.set_btn)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        box.add_css_class("pop")
+        entries = {}
+        for label, key in (("Model", "model"), ("Endpoint", "endpoint"),
+                           ("Mic source", "mic_source"),
+                           ("Record secs", "record_seconds")):
+            lab = Gtk.Label(label=label)
+            lab.add_css_class("pop-label")
+            lab.set_halign(Gtk.Align.START)
+            box.append(lab)
+            ent = Gtk.Entry()
+            ent.set_text(str(self.settings.get(key, "")))
+            ent.add_css_class("entry2")
+            ent.set_name(key)
+            box.append(ent)
+            entries[key] = ent
+        save = Gtk.Button(label="Save")
+        save.add_css_class("round-btn")
+        clr = Gtk.Button(label="Clear history")
+        clr.add_css_class("round-btn")
+        save.connect("clicked", lambda b: self._save_settings(pop, entries))
+        clr.connect("clicked",
+                    lambda b: (open(HIST, "w").close(), self._close_pop()))
+        row = Gtk.Box(spacing=8)
+        row.append(save)
+        row.append(clr)
+        box.append(row)
+        pop.set_child(box)
+        pop.popup()
+        self._pop = pop
+
+    def _save_settings(self, pop, entries):
+        for k, e in entries.items():
+            val = e.get_text().strip()
+            if k == "record_seconds":
+                try:
+                    val = int(val)
+                except Exception:
+                    val = 4
+            self.settings[k] = val
+        save_settings(self.settings)
+        global MODEL, URL
+        MODEL = self.settings.get("model", MODEL)
+        URL = self.settings.get("endpoint", URL)
+        self._close_pop()
+
     def _close_pop(self):
+        if self._clock_source:
+            GLib.source_remove(self._clock_source)
+            self._clock_source = None
         if self._pop:
             try:
                 self._pop.popdown()
@@ -350,7 +523,8 @@ class Bar:
 
     # ---- workers ----------------------------------------------------------
     def _dictate(self):
-        wav = record_audio(4)
+        secs = int(self.settings.get("record_seconds", 4) or 4)
+        wav = record_audio(secs, self.settings.get("mic_source"))
         text = transcribe(wav) if wav else ""
         GLib.idle_add(self._dictate_done, text)
 
@@ -361,24 +535,22 @@ class Bar:
             self.entry.grab_focus()
             self.entry.set_position(-1)
         else:
-            self.entry.set_placeholder_text("🎤 STT offline — type instead")
+            self.entry.set_placeholder_text(
+                "🎤 STT offline — type instead")
         return False
 
     def _work(self, prompt, image_path):
         ans = chat(prompt, image_path)
-        log_history(prompt)
+        log_history(prompt, ans)
         GLib.idle_add(self._done, ans)
 
     def _done(self, ans):
         self._set_busy(False)
-        try:
-            self.win.get_clipboard().set(ans)
-            subprocess.run(["wl-copy"], input=ans.encode(),
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:  # noqa: BLE001
-            pass
-        self.entry.set_placeholder_text("copied to clipboard ✅")
-        GLib.timeout_add(1300, self._hide)
+        ok = copy_text(ans)
+        msg = "copied to clipboard ✅" if ok else "reply ready (copy failed)"
+        self.entry.set_placeholder_text(msg)
+        # keep the bar up a beat so Ctrl+V works, then hide
+        GLib.timeout_add(3500, self._hide)
         return False
 
     def _set_busy(self, busy):
