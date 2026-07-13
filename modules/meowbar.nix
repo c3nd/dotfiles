@@ -66,7 +66,7 @@
           export GDK_BACKEND=wayland
           export GI_TYPELIB_PATH="${typelibPath}:$GI_TYPELIB_PATH"
           export LD_PRELOAD="${layerSo} $LD_PRELOAD"
-          exec ${pyEnv}/bin/python3 "$HOME/.config/meowbar/meowbar.py"
+          exec ${pyEnv}/bin/python3 "$HOME/.config/meowbar/meowbar.py" "$@"
         '')
       ];
     }

@@ -6,7 +6,8 @@ A real Hyprland layer-surface widget that mirrors the Cluely/Pluely floating
 No webview, no license — just GTK4 on Wayland with real Aero glass.
 
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
-Type, Enter -> sends to :8080, reply shown in a dropdown (no clipboard).
+Type, Enter -> sends to :8080, reply shown in an in-surface panel (no clipboard).
+SUPER+Space toggles the bar (show / hide); SUPER+SHIFT+Space also hides.
 Buttons:  mic (live-dictate) . new . attach (image->vision) . screenshot .
           record (screen) . history . clock . settings . send.
 
@@ -140,6 +141,12 @@ CSS = """
 .entry2 { background: rgba(255,255,255,0.85); border-radius: 8px;
           border: 1px solid rgba(80,120,190,0.4); color: #0c1a2e;
           padding: 6px 10px; }
+.meowbar-reply { background: rgba(225,240,255,0.96); border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.7);
+          box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px 12px;
+          color: #0c1a2e; margin-top: 6px; }
+.meowbar-reply-title { font-weight: 700; color: #0c1a2e;
+          margin: 2px 6px 8px; }
 """
 
 # ---- backend calls --------------------------------------------------------
@@ -384,8 +391,11 @@ class Bar:
         self.settings = load_settings()
         if not self.settings.get("mic_source"):
             self.settings["mic_source"] = default_mic_source()
-        self.app = Gtk.Application(application_id="me.c3nd.meowbar")
+        self.app = Gtk.Application(
+            application_id="me.c3nd.meowbar",
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.app.connect("activate", self.on_activate)
+        self.app.connect("command-line", self.on_command_line)
         self.app.run()
 
     def on_activate(self, app):
@@ -463,11 +473,34 @@ class Bar:
         gloss.set_vexpand(False)
         gloss.set_size_request(-1, 16)
 
-        self.win.set_child(overlay)
+        # in-surface reply panel (below the pill) — grows on reply, hidden when
+        # empty. Avoids Gtk.Popover, which is flaky on wlroots layer-surfaces.
+        self.reply_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.reply_box.add_css_class("meowbar-reply")
+        self.reply_box.set_visible(False)
+        self.reply_box.set_margin_top(6)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        vbox.append(overlay)
+        vbox.append(self.reply_box)
+
+        self.win.set_child(vbox)
         self.win.present()
         self.entry.grab_focus()
         self._pop = None
         self._clock_source = None
+
+    def on_command_line(self, app, cmdline):
+        # Re-invocation (SUPER+Space pressed while already running): forward to
+        # the primary instance. `meowbar hide` forces HIDE; otherwise TOGGLE.
+        # This is what makes the keybind show/hide the SAME bar instead of
+        # spawning a duplicate.
+        args = cmdline.get_arguments()
+        if len(args) > 1 and args[1] == "hide":
+            GLib.idle_add(self._hide)
+        else:
+            self.toggle()
+        return 0
 
     def _icon_btn(self, glyph, tooltip, cb=None, send=False):
         btn = Gtk.Button()
@@ -483,6 +516,11 @@ class Bar:
     # ---- interactions -----------------------------------------------------
     def on_key(self, widget, keyval, keycode, state):
         if keyval == Gdk.KEY_Escape:
+            # first Esc closes any reply panel; second Esc hides the bar
+            if self.reply_box.get_visible():
+                self.reply_box.set_visible(False)
+                self.entry.set_placeholder_text("Ask me anything…")
+                return True
             self._hide()
             return True
         if state & Gdk.ModifierType.CONTROL_MASK:
@@ -726,21 +764,17 @@ class Bar:
         return False
 
     def _show_reply(self, ans):
-        """Show the model's answer in a little dropdown (popover) under the
-        bar instead of pushing it to the clipboard. Stays until Esc / new ask."""
-        self._close_pop()
-        pop = Gtk.Popover()
-        pop.set_parent(self.send_btn)
-        pop.set_has_arrow(True)
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        vbox.add_css_class("pop")
-        vbox.set_size_request(360, -1)
+        """Show the model's answer in an in-surface panel below the pill (no
+        Gtk.Popover — those are flaky on wlroots layer-surfaces and only show
+        ~half the time). Stays until Esc / new ask / hide."""
+        # (re)build the panel content
+        while self.reply_box.get_first_child() is not None:
+            self.reply_box.remove(self.reply_box.get_first_child())
 
         title = Gtk.Label(label="✨ reply")
-        title.add_css_class("pop-title")
+        title.add_css_class("meowbar-reply-title")
         title.set_halign(Gtk.Align.START)
-        vbox.append(title)
+        self.reply_box.append(title)
 
         lbl = Gtk.Label(label=ans)
         lbl.set_wrap(True)
@@ -750,13 +784,7 @@ class Bar:
         lbl.set_valign(Gtk.Align.START)
         lbl.set_margin_start(6)
         lbl.set_margin_end(6)
-
-        sc = Gtk.ScrolledWindow()
-        sc.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        sc.set_child(lbl)
-        sc.set_max_content_height(260)
-        sc.set_propagate_natural_height(True)
-        vbox.append(sc)
+        self.reply_box.append(lbl)
 
         copy = Gtk.Button(label="📋 copy")
         copy.add_css_class("round-btn")
@@ -765,11 +793,10 @@ class Bar:
                      lambda b: (copy_text(ans), b.set_label("📋 copied ✅"),
                                 GLib.timeout_add(1500,
                                                  lambda: b.set_label("📋 copy"))))
-        vbox.append(copy)
+        self.reply_box.append(copy)
 
-        pop.set_child(vbox)
-        pop.popup()
-        self._pop = pop
+        self.reply_box.set_visible(True)
+        self.win.set_visible(True)  # ensure bar is up when reply arrives
         self.entry.set_placeholder_text("reply shown — ask again, or Esc to close")
         return False
 
@@ -786,9 +813,19 @@ class Bar:
 
     def _hide(self, *a):
         self._close_pop()
+        self.reply_box.set_visible(False)
         self.win.set_visible(False)
+
+    def toggle(self):
+        """Show if hidden, hide if visible (SUPER+Space)."""
+        if self.win.get_visible():
+            self._hide()
+        else:
+            self.win.set_visible(True)
+            self.entry.grab_focus()
         return False
 
 
 if __name__ == "__main__":
     Bar()
+
