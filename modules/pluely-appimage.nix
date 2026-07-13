@@ -24,7 +24,7 @@ let
 
     src = pkgs.fetchurl {
       url = "https://github.com/iamsrikanthnani/pluely/releases/download/app-v${cfg.version}/Pluely_${cfg.version}_amd64.AppImage";
-      hash = "sha256-9542ecef841a68f7653a8b0c9894665a023d6ebcae21cfd96c72cf3447fc013c";
+      hash = "sha256-lULs74QaaPdlOosMmJRmWgI9bryuIc/ZbHLPNEf8ATw=";
     };
 
     # Tauri/WebKitGTK runtime libs (same set that keeps atomic-chat from
