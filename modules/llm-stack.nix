@@ -183,24 +183,24 @@ in
     # ---- General LLM server (TurboQuant llama.cpp) ----------------------
     # NOTE: named llm-stack-vl (not llama-server) to avoid colliding with
     # nixpkgs' stock services.llama-cpp.server unit.
+    # ExecStart MUST be a single string — a list emits multiple ExecStart=
+    # lines, which systemd rejects (bad unit file).
     systemd.services.llm-stack-vl = {
       description = "TurboQuant llama.cpp server (LFM2.5-VL-1.6B text+vision, CUDA)";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = [
-          "${turboquant-llama}/bin/llama-server"
-          "--model" "${lfm25vl-model}"
-          "--mmproj" "${lfm25vl-mmproj}"
-          "--host" "127.0.0.1"
-          "--port" (toString cfg.llamaPort)
-          "--ctx-size" (toString cfg.contextSize)
-          "--n-gpu-layers" (toString cfg.gpuLayers)
-          "--cache-type-k" cfg.kvCacheType
-          "--cache-type-v" cfg.kvCacheType
-          "--flash-attn" "on"
-          "--alias" "LFM2.5-VL-1.6B"
-        ];
+        ExecStart = "${turboquant-llama}/bin/llama-server \
+          --model ${lfm25vl-model} \
+          --mmproj ${lfm25vl-mmproj} \
+          --host 127.0.0.1 \
+          --port ${toString cfg.llamaPort} \
+          --ctx-size ${toString cfg.contextSize} \
+          --n-gpu-layers ${toString cfg.gpuLayers} \
+          --cache-type-k ${cfg.kvCacheType} \
+          --cache-type-v ${cfg.kvCacheType} \
+          --flash-attn on \
+          --alias LFM2.5-VL-1.6B";
         Restart = "on-failure";
         RestartSec = 3;
         DynamicUser = true;
@@ -215,12 +215,10 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = [
-          "${whisper-cuda}/bin/whisper-server"
-          "--model" "${whisper-model}"
-          "--host" "127.0.0.1"
-          "--port" (toString cfg.whisperPort)
-        ];
+        ExecStart = "${whisper-cuda}/bin/whisper-server \
+          --model ${whisper-model} \
+          --host 127.0.0.1 \
+          --port ${toString cfg.whisperPort}";
         Restart = "on-failure";
         RestartSec = 3;
         DynamicUser = true;
@@ -234,19 +232,17 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" "llm-stack-vl.service" ];
       serviceConfig = {
-        ExecStart = [
-          "${turboquant-llama}/bin/llama-server"
-          "--model" "${minicpm46-model}"
-          "--mmproj" "${minicpm46-mmproj}"
-          "--host" "127.0.0.1"
-          "--port" (toString cfg.comparisonPort)
-          "--ctx-size" (toString cfg.contextSize)
-          "--n-gpu-layers" (toString cfg.gpuLayers)
-          "--cache-type-k" cfg.kvCacheType
-          "--cache-type-v" cfg.kvCacheType
-          "--flash-attn" "on"
-          "--alias" "MiniCPM-V-4.6"
-        ];
+        ExecStart = "${turboquant-llama}/bin/llama-server \
+          --model ${minicpm46-model} \
+          --mmproj ${minicpm46-mmproj} \
+          --host 127.0.0.1 \
+          --port ${toString cfg.comparisonPort} \
+          --ctx-size ${toString cfg.contextSize} \
+          --n-gpu-layers ${toString cfg.gpuLayers} \
+          --cache-type-k ${cfg.kvCacheType} \
+          --cache-type-v ${cfg.kvCacheType} \
+          --flash-attn on \
+          --alias MiniCPM-V-4.6";
         Restart = "on-failure";
         RestartSec = 3;
         DynamicUser = true;
