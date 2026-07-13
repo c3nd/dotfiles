@@ -51,6 +51,10 @@
       };
 
       home.packages = [
+        # runtime deps the bar actually shells out to:
+        pkgs.ffmpeg          # audio capture / conversion (user-requested)
+        pkgs.pipewire        # pw-record (mic capture)
+        pkgs.wl-clipboard    # wl-copy (persistent clipboard)
         (pkgs.writeShellScriptBin "meowbar" ''
           export MEOWBAR_URL="${config.programs.meowbar.url}"
           export MEOWBAR_MODEL="${config.programs.meowbar.model}"
