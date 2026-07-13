@@ -8,6 +8,9 @@ No webview, no license — just GTK4 on Wayland with real Aero glass.
 Summon:  SUPER+Space   (bound in ~/.config/hypr/hyprland/keybinds.lua)
 Type, Enter -> sends to :8080, reply shown in an in-surface panel (no clipboard).
 SUPER+Space toggles the bar (show / hide); SUPER+SHIFT+Space also hides.
+Every exchange is appended, timestamped and speaker-tagged, to
+~/meow_transcript.md (configurable). Rename the speakers or repoint the
+file under the ⚙ settings popover.
 Buttons:  mic (live-dictate) . new . attach (image->vision) . screenshot .
           record (screen) . history . clock . settings . send.
 
@@ -40,6 +43,9 @@ KEY = os.environ.get("MEOWBAR_KEY", "sk-local")
 WHISPER = os.environ.get("MEOWBAR_WHISPER", "http://localhost:8081/inference")
 HIST = os.path.expanduser("~/.cache/meowbar/history.jsonl")
 os.makedirs(os.path.dirname(HIST), exist_ok=True)
+TRANSCRIPT_DEFAULT = os.path.expanduser("~/meow_transcript.md")
+_transcript_lock = threading.Lock()
+_transcript_day = [None]  # last-written date, so we insert a ## day header on change
 
 CONFIG = os.path.expanduser("~/.config/meowbar/config.json")
 SETTINGS_DEFAULT = {
@@ -47,6 +53,9 @@ SETTINGS_DEFAULT = {
     "endpoint": URL,
     "mic_source": "",   # empty => auto-detect first Audio/Source
     "record_seconds": 4,
+    "speaker_name": "You",        # label for human input in the transcript
+    "bot_name": "Neko-chan",      # label for assistant replies in the transcript
+    "transcript_path": "",        # empty => ~/meow_transcript.md
 }
 
 
@@ -347,6 +356,42 @@ def log_history(prompt, answer=""):
     try:
         with open(HIST, "a") as f:
             f.write(json.dumps({"q": prompt, "a": answer}) + "\n")
+    except Exception:
+        pass
+
+
+def transcript_path(settings):
+    p = (settings.get("transcript_path") or "").strip()
+    return os.path.expanduser(p) if p else TRANSCRIPT_DEFAULT
+
+
+def log_transcript(speaker, text, settings):
+    """Append one timestamped, speaker-tagged line to the markdown transcript.
+
+    On a new calendar day a '## Monday 13 July 2026' header is written first,
+    so a long-running file groups entries by day. Idempotent per (speaker,text)
+    is NOT enforced — every call logs (the user may re-ask the same thing)."""
+    text = (text or "").strip()
+    if not text:
+        return
+    now = time.localtime()
+    ts = time.strftime("%H:%M:%S", now)
+    day = time.strftime("%A %d %B %Y", now)
+    path = transcript_path(settings)
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with _transcript_lock:
+            new = not os.path.exists(path) or os.path.getsize(path) == 0
+            with open(path, "a") as f:
+                if new:
+                    f.write("# meowbar transcript\n\n")
+                if _transcript_day[0] != day:
+                    if not new:
+                        f.write("\n")
+                    f.write(f"## {day}\n\n")
+                    _transcript_day[0] = day
+                # speaker-tagged line:  HH:MM:SS — Speaker: text
+                f.write(f"- {ts} — {speaker}: {text}\n")
     except Exception:
         pass
 
@@ -680,7 +725,11 @@ class Bar:
         entries = {}
         for label, key in (("Model", "model"), ("Endpoint", "endpoint"),
                            ("Mic source", "mic_source"),
-                           ("Record secs", "record_seconds")):
+                           ("Record secs", "record_seconds"),
+                           ("Your name (transcript)", "speaker_name"),
+                           ("Bot name (transcript)", "bot_name"),
+                           ("Transcript path (blank=~/meow_transcript.md)",
+                            "transcript_path")):
             lab = Gtk.Label(label=label)
             lab.add_css_class("pop-label")
             lab.set_halign(Gtk.Align.START)
@@ -760,6 +809,11 @@ class Bar:
     def _work(self, prompt, image_path):
         ans = chat(prompt, image_path)
         log_history(prompt, ans)
+        # timestamped, speaker-tagged transcript
+        log_transcript(self.settings.get("speaker_name", "You"), prompt,
+                       self.settings)
+        log_transcript(self.settings.get("bot_name", "Neko-chan"), ans,
+                       self.settings)
         GLib.idle_add(self._done, ans)
 
     def _done(self, ans):
