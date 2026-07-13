@@ -1,0 +1,14 @@
+# Local AI chat — points at the llm-stack LFM2.5-VL server on :8080.
+# Managed by dotfiles (symlinked into ~/.config/aichat via home.nix).
+model: local:LFM2.5-VL-1.6B
+save: true
+keybindings: emacs
+clients:
+  - type: openai-compatible
+    name: local
+    api_base: http://localhost:8080/v1
+    api_key: sk-local
+    models:
+      - name: LFM2.5-VL-1.6B
+        max_input_tokens: 8192
+        supports_vision: true

@@ -18,7 +18,7 @@ with lib;
 let
   cfg = config.programs.pluely-appimage;
 
-  pluely-pkg = pkgs.appimageTools.wrapType2 {
+  pluely-raw = pkgs.appimageTools.wrapType2 {
     pname = "pluely";
     version = cfg.version;
 
@@ -69,6 +69,22 @@ let
       platforms = [ "x86_64-linux" ];
       mainProgram = "pluely";
     };
+  };
+
+  # WebKitGTK's DMABUF/compositing renderer is broken on Nvidia (Quadro P2000)
+  # under Wayland/XWayland, making the whole webview UI crawl. Disable it so the
+  # renderer uses a stable path — this is the fix for the "app itself is really
+  # slow" lag (dragging, typing, menus). Wrap the AppImage binary to always set
+  # these, including when launched from the .desktop entry.
+  pluely-pkg = pkgs.symlinkJoin {
+    name = "pluely-${cfg.version}";
+    paths = [ pluely-raw ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/pluely \
+        --set WEBKIT_DISABLE_DMABUF_RENDERER 1 \
+        --set WEBKIT_DISABLE_COMPOSITING_MODE 1
+    '';
   };
 in
 {

@@ -50,6 +50,9 @@ in
     zed-editor
     calibre
 
+    # Local AI TUI chat (scratchpad, points at llm-stack :8080)
+    aichat
+
     # Prebuilt browsers (from flake inputs)
     inputs.zen-browser.packages.${pkgs.system}.beta
     inputs.brave-previews.packages.${pkgs.system}.brave-nightly
@@ -73,6 +76,13 @@ in
   # Symlink caelestia config dirs into ~/.config.
   xdg.configFile."caelestia" = {
     source = linkConfig "caelestia";
+    force = true;
+    recursive = true;
+  };
+
+  # Local AI TUI chat config (points at llm-stack :8080).
+  xdg.configFile."aichat" = {
+    source = linkConfig "aichat";
     force = true;
     recursive = true;
   };
