@@ -25,6 +25,9 @@ in
 
     # Pluely — open-source Cluely alternative (Tauri 2).
     ./modules/pluely.nix
+    # Pluely AppImage-wrapped release (works around the debug-webview bug in
+    # the Nix-built pluely package; the binary that ships on PATH comes from here).
+    ./modules/pluely-appimage.nix
   ];
 
   ############################################################################
@@ -150,7 +153,15 @@ in
   #
   # Built from the pluely flake input. Enable to put `pluely` on PATH.
   ############################################################################
-  programs.pluely.enable = true;
+  # The Nix-built pluely package ships a debug webview (fails to embed its
+  # frontend → "Connection refused"). Keep the module imported for reference
+  # but DON'T put its broken binary on PATH.
+  programs.pluely.enable = false;
+
+  # Use the upstream AppImage release instead (modules/pluely-appimage.nix).
+  # Set `hash` after the first switch prints the real sha256.
+  programs.pluely-appimage.enable = true;
+  # programs.pluely-appimage.hash = "sha256-...";  # fill in after first build
 
   ############################################################################
   # State version
