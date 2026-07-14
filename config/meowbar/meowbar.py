@@ -12,7 +12,7 @@ Every exchange is appended, timestamped and speaker-tagged, to
 ~/meow_transcript.md (configurable). Rename the speakers or repoint the
 file under the ⚙ settings popover.
 Buttons:  mic (live-dictate) . new . attach (image->vision) . screenshot .
-          record (screen) . history . clock . settings . send.
+          record (screen) . history . source . settings . send.
 
 Env overrides:
   MEOWBAR_URL       default http://localhost:8080/v1
@@ -78,7 +78,9 @@ def save_settings(s):
 
 
 def default_mic_source():
-    """Pick the first PipeWire audio source (robust on NixOS/pipewire)."""
+    """Pick the real PipeWire/ALSA microphone input. Never returns the
+    silent 'Dummy' driver or a monitor/sink — those produce empty audio
+    and make transcription look broken."""
     try:
         out = subprocess.run(
             ["pw-cli", "list-objects", "Node"],
@@ -91,13 +93,43 @@ def default_mic_source():
             elif cur is not None:
                 if "node.name" in line:
                     cur["name"] = line.split("=", 1)[-1].strip().strip('"')
+                if "node.description" in line:
+                    cur["desc"] = line.split("=", 1)[-1].strip().strip('"')
                 if "media.class" in line:
                     cur["cls"] = line.split("=", 1)[-1].strip().strip('"')
-                    if cur.get("cls") == "Audio/Source" and cur.get("name"):
-                        return cur["name"]
+                    nm = cur.get("name", "")
+                    # real microphone source, explicitly skip Dummy + monitors
+                    if (cur.get("cls") == "Audio/Source"
+                            and "dummy" not in nm.lower()
+                            and "monitor" not in nm.lower()
+                            and "mono-fallback" not in nm.lower()):
+                        return nm
     except Exception:
         pass
+    # hard fallback to the known-good ALSA mic on this machine
     return "alsa_input.pci-0000_00_1f.3.analog-stereo"
+
+
+def default_monitor_source():
+    """Pick the PipeWire monitor (system/computer-audio output capture).
+
+    Returns the '*.monitor' source — the tap on the default output sink, so
+    we record what the speakers are playing (meetings, video, music) instead
+    of the mic. Falls back to the ALSA hw monitor on this machine.
+    """
+    try:
+        out = subprocess.run(
+            ["pw-cli", "list-objects", "Node"],
+            capture_output=True, text=True, timeout=8).stdout
+        for line in out.splitlines():
+            line = line.strip()
+            if "node.name" in line and ".monitor" in line:
+                nm = line.split("=", 1)[-1].strip().strip('"')
+                if "monitor" in nm.lower():
+                    return nm
+    except Exception:
+        pass
+    return "alsa_output.pci-0000_00_1f.3.analog-stereo.monitor"
 
 
 # ---- Windows 7 Aero glass -------------------------------------------------
@@ -154,6 +186,8 @@ CSS = """
           border: 1px solid rgba(255,255,255,0.7);
           box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px 12px;
           color: #0c1a2e; margin-top: 6px; }
+.meowbar-reply-scroll { border-radius: 14px; }
+.meowbar-reply-scroll > .meowbar-reply { margin-top: 0; }
 .meowbar-reply-title { font-weight: 700; color: #0c1a2e;
           margin: 2px 6px 8px; }
 """
@@ -559,6 +593,8 @@ class Bar:
         self.rec_proc = None  # screen-recorder Popen when active
         self.audio_proc = None  # mic capture Popen when recording
         self.audio_wav = "/tmp/meow_audio.wav"
+        # capture source for the 🎤 audio recorder: "mic" or "system"
+        self.audio_source = "mic"
         self.mic_btn = self._icon_btn("🎤", "Record audio (tap to start/stop)", self.on_mic)
         self.new_btn = self._icon_btn("✏️", "New chat", self.on_new)
         self.attach_btn = self._icon_btn("📎", "Attach image (vision)",
@@ -567,7 +603,7 @@ class Bar:
                                        self.on_screenshot)
         self.rec_btn = self._icon_btn("🎬", "Record screen", self.on_record)
         self.hist_btn = self._icon_btn("📜", "History", self.on_history)
-        self.clock_btn = self._icon_btn("🕘", "Clock", self.on_clock)
+        self.src_btn = self._icon_btn("🎙", "Capture: Microphone (tap to switch to System audio)", self.on_toggle_source)
         self.set_btn = self._icon_btn("⚙", "Settings", self.on_settings)
         self.send_btn = self._icon_btn("➤", "Send", self.on_send, send=True)
 
@@ -579,7 +615,7 @@ class Bar:
         pill.append(self.shot_btn)
         pill.append(self.rec_btn)
         pill.append(self.hist_btn)
-        pill.append(self.clock_btn)
+        pill.append(self.src_btn)
         pill.append(self.set_btn)
         pill.append(self.send_btn)
 
@@ -595,21 +631,31 @@ class Bar:
         gloss.set_size_request(-1, 16)
 
         # in-surface reply panel (below the pill) — grows on reply, hidden when
-        # empty. Avoids Gtk.Popover, which is flaky on wlroots layer-surfaces.
+        # empty. Wrapped in a ScrolledWindow capped at a max height so a long
+        # transcript/answer scrolls inside instead of inflating the whole bar.
         self.reply_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.reply_box.add_css_class("meowbar-reply")
-        self.reply_box.set_visible(False)
-        self.reply_box.set_margin_top(6)
+        self.reply_box.set_visible(True)
+
+        self.reply_scroll = Gtk.ScrolledWindow()
+        self.reply_scroll.set_child(self.reply_box)
+        self.reply_scroll.set_propagate_natural_height(True)
+        self.reply_scroll.set_max_content_height(300)
+        self.reply_scroll.set_min_content_height(40)
+        self.reply_scroll.set_policy(Gtk.PolicyType.NEVER,
+                                     Gtk.PolicyType.AUTOMATIC)
+        self.reply_scroll.add_css_class("meowbar-reply-scroll")
+        self.reply_scroll.set_visible(False)
+        self.reply_scroll.set_margin_top(6)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         vbox.append(overlay)
-        vbox.append(self.reply_box)
+        vbox.append(self.reply_scroll)
 
         self.win.set_child(vbox)
         self.win.present()
         self.entry.grab_focus()
         self._pop = None
-        self._clock_source = None
         self._activated = True
 
     def on_command_line(self, app, cmdline):
@@ -641,8 +687,8 @@ class Bar:
     def on_key(self, widget, keyval, keycode, state):
         if keyval == Gdk.KEY_Escape:
             # first Esc closes any reply panel; second Esc hides the bar
-            if self.reply_box.get_visible():
-                self.reply_box.set_visible(False)
+            if self.reply_scroll.get_visible():
+                self.reply_scroll.set_visible(False)
                 self.entry.set_placeholder_text("Ask me anything…")
                 return True
             self._hide()
@@ -677,11 +723,15 @@ class Bar:
                              daemon=True).start()
         else:
             # start capture
+            src = (default_monitor_source() if self.audio_source == "system"
+                   else self.settings.get("mic_source"))
             self.entry.set_text("")
-            self.entry.set_placeholder_text("🎤 recording… tap 🎤 again to stop")
+            label = ("🎤 recording SYSTEM audio… tap 🎤 again to stop"
+                     if self.audio_source == "system"
+                     else "🎤 recording… tap 🎤 again to stop")
+            self.entry.set_placeholder_text(label)
             self.mic_btn.add_css_class("rec-on")
-            self.audio_proc = start_audio_capture(
-                self.audio_wav, self.settings.get("mic_source"))
+            self.audio_proc = start_audio_capture(self.audio_wav, src)
 
     def _transcribe_recording(self):
         stop_audio_capture(self.audio_proc)
@@ -689,12 +739,27 @@ class Bar:
         wav = self.audio_wav
         has_audio = os.path.exists(wav) and os.path.getsize(wav) > 44
         text = transcribe(wav).strip() if has_audio else ""
+        segs = transcribe_segments(wav) if has_audio else []
         if not text:
             GLib.idle_add(self._rec_done_empty, has_audio)
             return
+        # render diarized (or flat) body text. Speaker identity is NOT
+        # inferred here — segments are shown as neutral "Speaker N:" and the
+        # user relabels them in the transcript panel after seeing the text.
+        if segs:
+            spk = sorted({s.get("speaker", "") for s in segs
+                         if s.get("speaker")})
+            default_names = {k: f"Speaker {i+1}"
+                             for i, k in enumerate(spk)}
+            body = "\n".join(
+                f"{default_names[s.get('speaker','')]}: "
+                f"{s.get('text','').strip()}" for s in segs)
+        else:
+            default_names = {}
+            body = text
         # generate an AI title (offline, local LFM) in the same worker
-        title = autotitle(text)
-        GLib.idle_add(self._rec_done, text, title)
+        title = autotitle(body)
+        GLib.idle_add(self._rec_done, body, title, segs, default_names)
 
     def _rec_done_empty(self, had_audio):
         self._set_busy(False)
@@ -704,16 +769,23 @@ class Bar:
         self.entry.set_placeholder_text(msg)
         return False
 
-    def _rec_done(self, text, title):
+    def _rec_done(self, text, title, segs=None, default_names=None):
         self._set_busy(False)
         self.mic_btn.remove_css_class("rec-on")
-        self._show_transcript(text, title)
+        self._show_transcript(text, title, segs or [], default_names or {})
         return False
 
-    def _show_transcript(self, text, title):
+    def _show_transcript(self, text, title, segs=None, default_names=None):
         """Reply panel showing the transcript, an editable title, and a
         Save button that writes md + wav to the transcripts/recordings dirs.
+
+        When the server returned per-speaker segments, the transcript is shown
+        as neutral 'Speaker N:' lines and — only if there are 2+ speakers — a
+        relabel row lets you rename each speaker *after* reading the text
+        (identity is never guessed up front).
         """
+        segs = segs or []
+        default_names = default_names or {}
         while self.reply_box.get_first_child() is not None:
             self.reply_box.remove(self.reply_box.get_first_child())
 
@@ -722,8 +794,17 @@ class Bar:
         title_lbl.set_halign(Gtk.Align.START)
         self.reply_box.append(title_lbl)
 
-        # transcript body (selectable)
-        body = Gtk.Label(label=text)
+        # live speaker-name map (mutable; edited by the relabel dropdowns)
+        names = dict(default_names)
+
+        def render_body():
+            if segs and names:
+                return "\n".join(
+                    f"{names.get(s.get('speaker',''), s.get('speaker',''))}: "
+                    f"{s.get('text','').strip()}" for s in segs)
+            return text
+
+        body = Gtk.Label(label=render_body())
         body.set_wrap(True)
         body.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         body.set_selectable(True)
@@ -733,7 +814,31 @@ class Bar:
         body.set_margin_end(6)
         self.reply_box.append(body)
 
-        # title row: editable entry + Save button
+        # relabel row: only when 2+ distinct speakers exist
+        speakers = list(default_names.keys())
+        if len(speakers) >= 2:
+            relbl = Gtk.Label(label="who's who:")
+            relbl.add_css_class("pop-label")
+            relbl.set_halign(Gtk.Align.START)
+            self.reply_box.append(relbl)
+            for spk in speakers:
+                r = Gtk.Box(spacing=6)
+                lab = Gtk.Label(label=default_names[spk])
+                lab.add_css_class("pop-label")
+                lab.set_halign(Gtk.Align.START)
+                combo = Gtk.DropDown.new_from_strings(
+                    [default_names[spk], "You", "Bot", "Them", "Other"])
+                combo.set_selected(0)
+                combo.connect("notify::selected",
+                              lambda c, spk=spk, *_: (
+                                  names.__setitem__(
+                                      spk, c.get_selected_item().get_string()),
+                                  body.set_label(render_body())))
+                r.append(lab)
+                r.append(combo)
+                self.reply_box.append(r)
+
+        # title row: editable entry + Save / Don't-save buttons
         row = Gtk.Box(spacing=8)
         title_ent = Gtk.Entry()
         title_ent.set_text(title)
@@ -745,14 +850,20 @@ class Bar:
         save = Gtk.Button(label="💾 Save")
         save.add_css_class("round-btn")
         row.append(save)
+
+        nosave = Gtk.Button(label="✖ Don't save")
+        nosave.add_css_class("round-btn")
+        row.append(nosave)
         self.reply_box.append(row)
 
         def do_save(b):
             chosen = (title_ent.get_text().strip() or title
                       or "untitled")
+            # re-render with any relabels applied before saving
             md_path, rec_path = save_recording(
-                text, self.audio_wav, chosen, self.settings)
+                render_body(), self.audio_wav, chosen, self.settings)
             save.set_label("💾 saved ✅")
+            nosave.set_sensitive(False)
             self.entry.set_placeholder_text(
                 "💾 saved to Documents/meow-transcripts")
             conf = Gtk.Label(label=f"saved: {os.path.basename(md_path)}")
@@ -760,8 +871,15 @@ class Bar:
             conf.set_halign(Gtk.Align.START)
             self.reply_box.append(conf)
 
+        def do_nosave(b):
+            # dismiss without writing anything; transcript panel hidden
+            self.reply_scroll.set_visible(False)
+            self.mic_btn.remove_css_class("rec-on")
+            self.entry.set_placeholder_text("🎤 transcript discarded")
+
         save.connect("clicked", do_save)
-        self.reply_box.set_visible(True)
+        nosave.connect("clicked", do_nosave)
+        self.reply_scroll.set_visible(True)
         self.win.set_visible(True)
         self.entry.set_placeholder_text(
             "transcript ready — edit title, hit 💾 Save")
@@ -860,33 +978,25 @@ class Bar:
         self.entry.grab_focus()
         pop.popdown()
 
-    def on_clock(self, *a):
+    def on_toggle_source(self, *a):
+        """Toggle the 🎤 recorder's capture source between microphone and
+        system (computer) audio. Updates the source button label/icon + the
+        recorder placeholder so the user knows what they'll capture."""
         self._close_pop()
-        pop = Gtk.Popover()
-        pop.set_parent(self.clock_btn)
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        box.add_css_class("pop")
-        tlabel = Gtk.Label()
-        tlabel.add_css_class("pop-title")
-        dlabel = Gtk.Label()
-        dlabel.add_css_class("pop-label")
-        box.append(Gtk.Label(label="🕘 now"))
-        box.children()[-1].add_css_class("pop-title")
-        box.append(tlabel)
-        box.append(dlabel)
-        pop.set_child(box)
-        pop.popup()
-        self._pop = pop
-
-        def tick():
-            now = time.localtime()
-            tlabel.set_label(time.strftime("%H:%M:%S", now))
-            dlabel.set_label(time.strftime("%A %d %B %Y", now))
-            return True
-        tick()
-        if self._clock_source:
-            GLib.source_remove(self._clock_source)
-        self._clock_source = GLib.timeout_add(1000, tick)
+        if self.audio_source == "mic":
+            self.audio_source = "system"
+            self.src_btn.set_label("🔊")  # speaker = system capture active
+            self.src_btn.set_tooltip_text(
+                "Capture: System audio (tap to switch to Microphone)")
+            self.entry.set_placeholder_text(
+                "🎤 will record SYSTEM audio — tap 🎤 to start")
+        else:
+            self.audio_source = "mic"
+            self.src_btn.set_label("🎙")
+            self.src_btn.set_tooltip_text(
+                "Capture: Microphone (tap to switch to System audio)")
+            self.entry.set_placeholder_text(
+                "🎤 will record MIC — tap 🎤 to start")
 
     def on_settings(self, *a):
         self._close_pop()
@@ -943,9 +1053,6 @@ class Bar:
         self._close_pop()
 
     def _close_pop(self):
-        if self._clock_source:
-            GLib.source_remove(self._clock_source)
-            self._clock_source = None
         if self._pop:
             try:
                 self._pop.popdown()
@@ -1001,7 +1108,7 @@ class Bar:
                                                  lambda: b.set_label("📋 copy"))))
         self.reply_box.append(copy)
 
-        self.reply_box.set_visible(True)
+        self.reply_scroll.set_visible(True)
         self.win.set_visible(True)  # ensure bar is up when reply arrives
         self.entry.set_placeholder_text("reply shown — ask again, or Esc to close")
         return False
@@ -1019,7 +1126,7 @@ class Bar:
 
     def _hide(self, *a):
         self._close_pop()
-        self.reply_box.set_visible(False)
+        self.reply_scroll.set_visible(False)
         self.win.set_visible(False)
 
     def toggle(self):
