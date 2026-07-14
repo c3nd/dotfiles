@@ -350,7 +350,10 @@ def save_recording(transcript, wav_path, title, settings):
 
 
 def start_audio_capture(wav_path, source):
-    """Start ffmpeg capturing mic -> 16k mono wav. Returns the Popen."""
+    """Start ffmpeg capturing one pulse source -> 16k mono wav.
+
+    Returns the Popen.
+    """
     src = source or default_mic_source()
     # avoid the PipeWire null sink if a real source exists
     if src in ("Dummy-Driver", "dummy-output", "null"):
@@ -359,6 +362,26 @@ def start_audio_capture(wav_path, source):
             src = real
     return subprocess.Popen(
         ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-ar", "16000", "-ac", "1",
+         wav_path],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def start_audio_capture_mixed(wav_path, mic, mon):
+    """Capture mic + system audio together, mixed down to 16k mono wav.
+
+    Both sources are read at once and summed with ffmpeg's amix so a single
+    recording carries two voices (e.g. you + a YouTube video) for the
+    diarizer to separate. Returns the Popen.
+    """
+    mic = mic or default_mic_source()
+    mon = mon or default_monitor_source()
+    return subprocess.Popen(
+        ["ffmpeg", "-y",
+         "-f", "pulse", "-i", mic,
+         "-f", "pulse", "-i", mon,
+         "-filter_complex",
+         "[0:a][1:a]amix=inputs=2:duration=longest:dropout_transition=0,"
+         "aresample=16000,aformat=channel_layouts=mono",
          wav_path],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -722,16 +745,24 @@ class Bar:
             threading.Thread(target=self._transcribe_recording,
                              daemon=True).start()
         else:
-            # start capture
-            src = (default_monitor_source() if self.audio_source == "system"
-                   else self.settings.get("mic_source"))
+            # start capture — source depends on the source button state
+            if self.audio_source == "system":
+                src = default_monitor_source()
+                self.audio_proc = start_audio_capture(self.audio_wav, src)
+                label = ("🎤 recording SYSTEM audio… tap 🎤 again to stop")
+            elif self.audio_source == "both":
+                self.audio_proc = start_audio_capture_mixed(
+                    self.audio_wav,
+                    self.settings.get("mic_source"),
+                    default_monitor_source())
+                label = ("🎤 recording MIC + SYSTEM… tap 🎤 again to stop")
+            else:
+                src = self.settings.get("mic_source")
+                self.audio_proc = start_audio_capture(self.audio_wav, src)
+                label = "🎤 recording… tap 🎤 again to stop"
             self.entry.set_text("")
-            label = ("🎤 recording SYSTEM audio… tap 🎤 again to stop"
-                     if self.audio_source == "system"
-                     else "🎤 recording… tap 🎤 again to stop")
             self.entry.set_placeholder_text(label)
             self.mic_btn.add_css_class("rec-on")
-            self.audio_proc = start_audio_capture(self.audio_wav, src)
 
     def _transcribe_recording(self):
         stop_audio_capture(self.audio_proc)
@@ -752,7 +783,7 @@ class Bar:
             default_names = {k: f"Speaker {i+1}"
                              for i, k in enumerate(spk)}
             body = "\n".join(
-                f"{default_names[s.get('speaker','')]}: "
+                f"[{default_names[s.get('speaker','')]}]: "
                 f"{s.get('text','').strip()}" for s in segs)
         else:
             default_names = {}
@@ -800,7 +831,7 @@ class Bar:
         def render_body():
             if segs and names:
                 return "\n".join(
-                    f"{names.get(s.get('speaker',''), s.get('speaker',''))}: "
+                    f"[{names.get(s.get('speaker',''), s.get('speaker',''))}]: "
                     f"{s.get('text','').strip()}" for s in segs)
             return text
 
@@ -977,24 +1008,34 @@ class Bar:
         self.entry.set_text(q)
         self.entry.grab_focus()
         pop.popdown()
-
     def on_toggle_source(self, *a):
-        """Toggle the 🎤 recorder's capture source between microphone and
-        system (computer) audio. Updates the source button label/icon + the
-        recorder placeholder so the user knows what they'll capture."""
+        """Cycle the 🎤 recorder's capture source: mic -> system -> both.
+
+        'both' mixes the microphone and the system monitor into one track so
+        a real two-voice scene (you + a video/meeting) lands in a single
+        recording for the diarizer to split. Updates the source-button icon
+        + the recorder placeholder so the user knows what they'll capture.
+        """
         self._close_pop()
         if self.audio_source == "mic":
             self.audio_source = "system"
             self.src_btn.set_label("🔊")  # speaker = system capture active
             self.src_btn.set_tooltip_text(
-                "Capture: System audio (tap to switch to Microphone)")
+                "Capture: System audio (tap: mic + system)")
             self.entry.set_placeholder_text(
                 "🎤 will record SYSTEM audio — tap 🎤 to start")
+        elif self.audio_source == "system":
+            self.audio_source = "both"
+            self.src_btn.set_label("🎙🔊")  # mic + system mixed
+            self.src_btn.set_tooltip_text(
+                "Capture: Mic + System mixed (tap: microphone)")
+            self.entry.set_placeholder_text(
+                "🎤 will record MIC + SYSTEM — tap 🎤 to start")
         else:
             self.audio_source = "mic"
             self.src_btn.set_label("🎙")
             self.src_btn.set_tooltip_text(
-                "Capture: Microphone (tap to switch to System audio)")
+                "Capture: Microphone (tap: system audio)")
             self.entry.set_placeholder_text(
                 "🎤 will record MIC — tap 🎤 to start")
 
