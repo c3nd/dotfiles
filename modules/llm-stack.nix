@@ -17,8 +17,17 @@
 #                                head-to-head. OFF by default — running three
 #                                models at once is tight on 4 GB VRAM. Enable
 #                                with `services.llm-stack.enableComparison = true;`.
-#   2. whisper-server (:8081) — speech-to-text: whisper small (q5_1),
-#                                CUDA-accelerated, OpenAI-compatible /inference.
+#   2. meow-stt      (:8081) — speech-to-text: faster-whisper (small, GPU/
+#                                CUDA float32) + offline Resemblyzer speaker
+#                                diarization, served by a Flask server in the
+#                                meow-stt venv (~/opt/meow-stt). Replaces the old
+#                                whisper.cpp whisper-server: nix whisper-cpp
+#                                silently ships the non-CUDA binary, and the
+#                                P2000 (Pascal) needs the PyPI ctranslate2 cu12
+#                                wheel + system CUDA 12.9 (see meow-stt-faster-
+#                                whisper.md). Diarization runs in a
+#                                CUDA_VISIBLE_DEVICES="" subprocess (torch's
+#                                Resemblyzer LSTM has no Pascal CUDA kernel).
 #
 # Enable with `services.llm-stack.enable = true;`.
 # The general LLM endpoint (OpenAI-compatible) lives at
@@ -71,9 +80,17 @@ let
     ];
   });
 
-  whisper-cuda = pkgs.whisper-cpp.override {
-    cudaSupport = true;
-  };
+  # ---- meow-stt: faster-whisper (GPU) + Resemblyzer diarization ---------
+  # The server + venv live at ~/opt/meow-stt (built by the meow-stt tracker,
+  # not nix — pip deps + HF model cache can't live in the read-only store).
+  # ctranslate2's PyPI CUDA wheel has no RPATH to the store's CUDA libs, so the
+  # unit MUST export LD_LIBRARY_PATH to the system CUDA 12.9 + driver shim.
+  meow-stt-home = "/home/kepler452/opt/meow-stt";
+  meow-stt-venv-python = "${meow-stt-home}/venv/bin/python";
+  cudaLib = pkgs.cudaPackages_12_9.cudatoolkit.lib;   # /nix/store ...-cuda-merged-12.9
+  # libcuda.so (driver shim) is provided at runtime by the OpenGL driver at
+  # /run/opengl-driver/lib; include it so ctranslate2 can open the device.
+  meow-stt-ld = lib.makeLibraryPath [ cudaLib ] + ":/run/opengl-driver/lib";
 
   # ---- Models (fetched into the store at build time) ---------------------
   # General + vision model: LFM2.5-VL-1.6B (does BOTH text chat and image
@@ -90,11 +107,8 @@ let
     sha256 = "2ce89e610c56f3198ece2b86cf61743a08b9307279c89125eb2412ebb908689d"; # mmproj Q8_0
   };
 
-  whisper-model = pkgs.fetchurl {
-    name = "ggml-small-q5_1.bin";
-    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
-    sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
-  };
+  # (faster-whisper fetches its model from HF cache on first run; no store
+  #  model fetch needed for meow-stt.)
 
   # ---- Comparison vision model: MiniCPM-V 4.6 (1.3B, Q4_K_M) -------------
   # Used only when enableComparison = true. Smaller than LFM (fits easily on
@@ -178,7 +192,7 @@ in
     # CUDA + the two forks/models are unfree-adjacent; allow what we need.
     nixpkgs.config.cudaSupport = true;
 
-    environment.systemPackages = [ turboquant-llama whisper-cuda ];
+    environment.systemPackages = [ turboquant-llama ];
 
     # ---- General LLM server (TurboQuant llama.cpp) ----------------------
     # NOTE: named llm-stack-vl (not llama-server) to avoid colliding with
@@ -199,17 +213,31 @@ in
       };
     };
 
-    # ---- Whisper STT server --------------------------------------------
-    systemd.services.whisper-server = {
-      description = "whisper.cpp STT server (small q5_1, CUDA)";
+    # ---- meow-stt STT server (faster-whisper GPU + diarization) ---------
+    # Runs the venv Flask server on :8081. LD_LIBRARY_PATH is required so the
+    # PyPI ctranslate2 cu12 wheel can find the system CUDA 12.9 runtime + the
+    # libcuda.so driver shim. Runs as the human user (not DynamicUser) because
+    # it reads the persistent venv + HF cache under /home/kepler452.
+    systemd.services.meow-stt = {
+      description = "meow-stt: faster-whisper (GPU) + Resemblyzer diarization";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = "${whisper-cuda}/bin/whisper-server --model ${whisper-model} --no-gpu --host 127.0.0.1 --port ${toString cfg.whisperPort}";
+        ExecStart = "${meow-stt-venv-python} ${meow-stt-home}/server.py";
         Restart = "on-failure";
         RestartSec = 3;
-        DynamicUser = true;
+        User = "kepler452";
+        WorkingDirectory = meow-stt-home;
+        Environment = [
+          "LD_LIBRARY_PATH=${meow-stt-ld}"
+          "MEOW_STT_MODEL=small"
+          "MEOW_STT_DEVICE=cuda"
+          "MEOW_STT_COMPUTE=float32"
+          "MEOW_STT_PYTHON=${meow-stt-venv-python}"
+        ];
         SupplementaryGroups = [ "video" "render" ];
+        # server binds 127.0.0.1:8081; protect from the net
+        NoNewPrivileges = true;
       };
     };
 

@@ -40,7 +40,7 @@ from gi.repository import Gtk, Gdk, Gtk4LayerShell
 URL = os.environ.get("MEOWBAR_URL", "http://localhost:8080/v1")
 MODEL = os.environ.get("MEOWBAR_MODEL", "LFM2.5-VL-1.6B")
 KEY = os.environ.get("MEOWBAR_KEY", "sk-local")
-WHISPER = os.environ.get("MEOWBAR_WHISPER", "http://localhost:8081/inference")
+WHISPER = os.environ.get("MEOWBAR_WHISPER", "http://localhost:8081/transcribe")
 HIST = os.path.expanduser("~/.cache/meowbar/history.jsonl")
 os.makedirs(os.path.dirname(HIST), exist_ok=True)
 TRANSCRIPT_DEFAULT = os.path.expanduser("~/meow_transcript.md")
@@ -192,7 +192,12 @@ def chat(prompt, image_path=None):
 
 
 def transcribe(wav_path):
-    """whisper.cpp /inference wants multipart form 'file=' (proven working)."""
+    """meow-stt (:8081/transcribe) — multipart 'file=' -> diarized transcript.
+
+    Returns the concatenated transcript text (so live-dictation keeps filling
+    the entry box as before). Speaker labels are available via
+    transcribe_segments() if the caller wants per-speaker lines.
+    """
     if not wav_path or not os.path.exists(wav_path):
         return ""
     boundary = "----meowbar" + os.urandom(16).hex()
@@ -209,9 +214,44 @@ def transcribe(wav_path):
         method="POST")
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
-            return r.read().decode().strip()
+            body = r.read().decode().strip()
+        # new server returns JSON {"text","segments":[{"speaker","text"}]};
+        # the old whisper.cpp returned plain text. Tolerate both.
+        if body.startswith("{"):
+            try:
+                return json.loads(body).get("text", "").strip()
+            except Exception:  # noqa: BLE001
+                return body
+        return body
     except Exception:  # noqa: BLE001
         return ""
+
+
+def transcribe_segments(wav_path):
+    """Like transcribe() but returns the list of {speaker,text} segments
+    from meow-stt's diarization, or [] if the server is down / plain text."""
+    if not wav_path or not os.path.exists(wav_path):
+        return []
+    boundary = "----meowbar" + os.urandom(16).hex()
+    with open(wav_path, "rb") as f:
+        data = f.read()
+    head = (f'--{boundary}\r\n'
+            f'Content-Disposition: form-data; name="file"; '
+            f'filename="voice.wav"\r\n'
+            f'Content-Type: audio/wav\r\n\r\n').encode()
+    payload = head + data + f'\r\n--{boundary}--\r\n'.encode()
+    req = urllib.request.Request(
+        WHISPER, data=payload,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            body = r.read().decode().strip()
+        if body.startswith("{"):
+            return json.loads(body).get("segments", [])
+    except Exception:  # noqa: BLE001
+        pass
+    return []
 
 
 def record_audio(seconds=4, source=None):
