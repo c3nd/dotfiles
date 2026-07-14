@@ -18,7 +18,7 @@ Env overrides:
   MEOWBAR_URL       default http://localhost:8080/v1
   MEOWBAR_MODEL     default LFM2.5-VL-1.6B
   MEOWBAR_KEY       default sk-local
-  MEOWBAR_WHISPER   default http://localhost:8081/inference
+  MEOWBAR_WHISPER   default http://localhost:8081/transcribe
 """
 import os
 import sys
@@ -254,59 +254,92 @@ def transcribe_segments(wav_path):
     return []
 
 
-def record_audio(seconds=4, source=None):
-    """Record mic -> 16k mono wav. Use ffmpeg (pulse) — pw-record produces a
-    wav header whisper.cpp rejects. Returns wav path or None."""
-    wav = "/tmp/meow_mic.wav"
-    src = source or default_mic_source()
-    try:
-        # ffmpeg -f pulse -i <node> -t N writes a clean RIFF wav whisper likes
-        subprocess.run(
-            ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-t", str(seconds),
-             "-ar", "16000", "-ac", "1", wav],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            timeout=seconds + 8, check=True)
-        return wav if os.path.exists(wav) and os.path.getsize(wav) > 44 else None
-    except Exception:  # noqa: BLE001
-        return None
+# ---- audio recorder: transcribe + save (transcript md + wav) ------------
+import re as _re
+
+TRANSCRIPTS_DIR = os.path.expanduser("~/Documents/meow-transcripts")
+RECORDINGS_DIR = os.path.expanduser("~/Pictures/meow-recordings")
 
 
-def record_and_stream(seconds, source, on_partial):
-    """Record via ffmpeg while streaming interim transcripts into the box.
-    Chunks the live wav every ~1.5s and sends each to whisper; the last
-    partial is returned (the full final transcript)."""
-    wav = "/tmp/meow_mic.wav"
-    src = source or default_mic_source()
-    # start ffmpeg writing continuously
-    proc = subprocess.Popen(
-        ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-ar", "16000", "-ac", "1", wav],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    last = ""
-    elapsed = 0.0
-    chunk = 1.5
-    try:
-        while proc.poll() is None and elapsed < seconds + 1:
-            time.sleep(chunk)
-            elapsed += chunk
-            if os.path.exists(wav) and os.path.getsize(wav) > 44:
-                txt = transcribe(wav)
-                txt = txt.strip()
-                if txt and txt != last:
-                    last = txt
-                    on_partial(txt)
-    finally:
-        proc.terminate()
+def sanitize_filename(name, maxlen=60):
+    """Turn arbitrary text into a safe single-path-segment filename."""
+    name = _re.sub(r'[^\w\s\-]', '', name, flags=_re.UNICODE)
+    name = _re.sub(r'\s+', ' ', name).strip()
+    name = name[:maxlen].strip()
+    return name or "untitled"
+
+
+def autotitle(transcript):
+    """Ask the local LFM for a SHORT (3-5 word) title for the transcript.
+
+    Fully offline (uses chat() -> :8080). Falls back to 'untitled' on any
+    error or empty reply."""
+    if not transcript.strip():
+        return "untitled"
+    prompt = (
+        "Summarize the following spoken transcript into a SHORT title of "
+        "3 to 5 words. Reply with ONLY the title — no quotes, no trailing "
+        "punctuation, no explanation.\n\n" + transcript[:2000]
+    )
+    t = chat(prompt).strip().strip('"').strip("'").strip()
+    return sanitize_filename(t) or "untitled"
+
+
+def save_recording(transcript, wav_path, title, settings):
+    """Write transcript markdown to ~/Documents/meow-transcripts/<title>.md
+    and copy the wav to ~/Pictures/meow-recordings/<title>.wav. Returns the
+    two paths (rec_path may be None if the wav was missing)."""
+    os.makedirs(TRANSCRIPTS_DIR, exist_ok=True)
+    os.makedirs(RECORDINGS_DIR, exist_ok=True)
+    ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    safe = sanitize_filename(title)
+    stamp = f"-{int(time.time())}"
+    md_path = os.path.join(TRANSCRIPTS_DIR, safe + ".md")
+    if os.path.exists(md_path):
+        md_path = os.path.join(TRANSCRIPTS_DIR, safe + stamp + ".md")
+    with open(md_path, "w") as f:
+        f.write(f"# {title}\n\n")
+        f.write(f"_recorded {ts}_\n\n")
+        f.write((transcript or "").strip() + "\n")
+    rec_path = None
+    if wav_path and os.path.exists(wav_path):
+        rec_path = os.path.join(RECORDINGS_DIR, safe + ".wav")
+        if os.path.exists(rec_path):
+            rec_path = os.path.join(RECORDINGS_DIR, safe + stamp + ".wav")
         try:
-            proc.wait(timeout=4)
+            shutil.copy(wav_path, rec_path)
         except Exception:  # noqa: BLE001
+            rec_path = None
+    # also log into the running meow_transcript.md for continuity
+    log_transcript(settings.get("speaker_name", "You"), transcript, settings)
+    return md_path, rec_path
+
+
+def start_audio_capture(wav_path, source):
+    """Start ffmpeg capturing mic -> 16k mono wav. Returns the Popen."""
+    src = source or default_mic_source()
+    # avoid the PipeWire null sink if a real source exists
+    if src in ("Dummy-Driver", "dummy-output", "null"):
+        real = default_mic_source()
+        if real and real != src:
+            src = real
+    return subprocess.Popen(
+        ["ffmpeg", "-y", "-f", "pulse", "-i", src, "-ar", "16000", "-ac", "1",
+         wav_path],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def stop_audio_capture(proc):
+    if proc is None:
+        return
+    try:
+        proc.terminate()
+        proc.wait(timeout=4)
+    except Exception:  # noqa: BLE001
+        try:
             proc.kill()
-    # final clean pass
-    if os.path.exists(wav) and os.path.getsize(wav) > 44:
-        final = transcribe(wav).strip()
-        if final:
-            last = final
-            on_partial(final)
-    return last
+        except Exception:  # noqa: BLE001
+            pass
 
 
 def pick_file(title="Select a file", mime=None):
@@ -524,7 +557,9 @@ class Bar:
         self.spinner.add_css_class("spin")
 
         self.rec_proc = None  # screen-recorder Popen when active
-        self.mic_btn = self._icon_btn("🎤", "Dictate (live transcription)", self.on_mic)
+        self.audio_proc = None  # mic capture Popen when recording
+        self.audio_wav = "/tmp/meow_audio.wav"
+        self.mic_btn = self._icon_btn("🎤", "Record audio (tap to start/stop)", self.on_mic)
         self.new_btn = self._icon_btn("✏️", "New chat", self.on_new)
         self.attach_btn = self._icon_btn("📎", "Attach image (vision)",
                                          self.on_attach)
@@ -629,10 +664,108 @@ class Bar:
                          daemon=True).start()
 
     def on_mic(self, *a):
+        """Toggle audio recorder. First tap starts capture; second tap stops
+        it, transcribes, and shows the transcript with a Save (auto-title)
+        action in the reply panel."""
         self._close_pop()
-        self.entry.set_placeholder_text("🎤 listening… speak now")
-        self._set_busy(True)
-        threading.Thread(target=self._dictate, daemon=True).start()
+        if self.audio_proc is not None:
+            # stop -> transcribe
+            self.mic_btn.remove_css_class("rec-on")
+            self.entry.set_placeholder_text("🎤 transcribing…")
+            self._set_busy(True)
+            threading.Thread(target=self._transcribe_recording,
+                             daemon=True).start()
+        else:
+            # start capture
+            self.entry.set_text("")
+            self.entry.set_placeholder_text("🎤 recording… tap 🎤 again to stop")
+            self.mic_btn.add_css_class("rec-on")
+            self.audio_proc = start_audio_capture(
+                self.audio_wav, self.settings.get("mic_source"))
+
+    def _transcribe_recording(self):
+        stop_audio_capture(self.audio_proc)
+        self.audio_proc = None
+        wav = self.audio_wav
+        has_audio = os.path.exists(wav) and os.path.getsize(wav) > 44
+        text = transcribe(wav).strip() if has_audio else ""
+        if not text:
+            GLib.idle_add(self._rec_done_empty, has_audio)
+            return
+        # generate an AI title (offline, local LFM) in the same worker
+        title = autotitle(text)
+        GLib.idle_add(self._rec_done, text, title)
+
+    def _rec_done_empty(self, had_audio):
+        self._set_busy(False)
+        self.mic_btn.remove_css_class("rec-on")
+        msg = ("🎤 no speech detected" if had_audio
+               else "🎤 no audio captured (mic source?)")
+        self.entry.set_placeholder_text(msg)
+        return False
+
+    def _rec_done(self, text, title):
+        self._set_busy(False)
+        self.mic_btn.remove_css_class("rec-on")
+        self._show_transcript(text, title)
+        return False
+
+    def _show_transcript(self, text, title):
+        """Reply panel showing the transcript, an editable title, and a
+        Save button that writes md + wav to the transcripts/recordings dirs.
+        """
+        while self.reply_box.get_first_child() is not None:
+            self.reply_box.remove(self.reply_box.get_first_child())
+
+        title_lbl = Gtk.Label(label="✍️ transcript")
+        title_lbl.add_css_class("meowbar-reply-title")
+        title_lbl.set_halign(Gtk.Align.START)
+        self.reply_box.append(title_lbl)
+
+        # transcript body (selectable)
+        body = Gtk.Label(label=text)
+        body.set_wrap(True)
+        body.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        body.set_selectable(True)
+        body.set_xalign(0.0)
+        body.set_valign(Gtk.Align.START)
+        body.set_margin_start(6)
+        body.set_margin_end(6)
+        self.reply_box.append(body)
+
+        # title row: editable entry + Save button
+        row = Gtk.Box(spacing=8)
+        title_ent = Gtk.Entry()
+        title_ent.set_text(title)
+        title_ent.set_hexpand(True)
+        title_ent.add_css_class("entry2")
+        title_ent.set_placeholder_text("title (auto-generated)")
+        row.append(title_ent)
+
+        save = Gtk.Button(label="💾 Save")
+        save.add_css_class("round-btn")
+        row.append(save)
+        self.reply_box.append(row)
+
+        def do_save(b):
+            chosen = (title_ent.get_text().strip() or title
+                      or "untitled")
+            md_path, rec_path = save_recording(
+                text, self.audio_wav, chosen, self.settings)
+            save.set_label("💾 saved ✅")
+            self.entry.set_placeholder_text(
+                "💾 saved to Documents/meow-transcripts")
+            conf = Gtk.Label(label=f"saved: {os.path.basename(md_path)}")
+            conf.add_css_class("pop-label")
+            conf.set_halign(Gtk.Align.START)
+            self.reply_box.append(conf)
+
+        save.connect("clicked", do_save)
+        self.reply_box.set_visible(True)
+        self.win.set_visible(True)
+        self.entry.set_placeholder_text(
+            "transcript ready — edit title, hit 💾 Save")
+        return False
 
     def on_new(self, *a):
         self._close_pop()
@@ -690,7 +823,6 @@ class Bar:
     def _shoot(self):
         png = take_screenshot()
         if not png:
-            GLib.idle_add(self._dictate_done, "")
             GLib.idle_add(lambda: self.entry.set_placeholder_text(
                 "📷 screenshot cancelled/failed"))
             return
@@ -821,30 +953,6 @@ class Bar:
                 pass
             self._pop = None
 
-    # ---- workers ----------------------------------------------------------
-    def _dictate(self):
-        secs = int(self.settings.get("record_seconds", 4) or 4)
-        # stream interim transcripts into the box as the user speaks
-        text = record_and_stream(
-            secs, self.settings.get("mic_source"),
-            lambda t: GLib.idle_add(self._live_text, t))
-        GLib.idle_add(self._dictate_done, text)
-
-    def _live_text(self, t):
-        self.entry.set_text(t)
-        self.entry.set_position(-1)
-        return False
-
-    def _dictate_done(self, text):
-        self._set_busy(False)
-        if text:
-            self.entry.set_text(text)
-            self.entry.grab_focus()
-            self.entry.set_position(-1)
-        else:
-            self.entry.set_placeholder_text(
-                "🎤 STT offline — type instead")
-        return False
 
     def _work(self, prompt, image_path):
         ans = chat(prompt, image_path)
