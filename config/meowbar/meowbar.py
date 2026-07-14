@@ -132,65 +132,131 @@ def default_monitor_source():
     return "alsa_output.pci-0000_00_1f.3.analog-stereo.monitor"
 
 
-# ---- Windows 7 Aero glass -------------------------------------------------
-CSS = """
-.meowbar-pill {
-  background: linear-gradient(to bottom,
-              rgba(190,222,255,0.42) 0%,
-              rgba(143,184,240,0.32) 48%,
-              rgba(110,150,220,0.30) 100%);
+# ---- Material You theming (reads live caelestia scheme) -------------------
+# meowbar themes itself from caelestia's generated Material You palette so it
+# always matches the current wallpaper/scheme. If the file is missing we fall
+# back to the caelestia "dynamic hard dark" blue palette baked in below.
+SCHEME_PATH = os.path.expanduser("~/.local/state/caelestia/scheme.json")
+
+_FALLBACK_COLOURS = {
+    "background": "020304", "onBackground": "e0e6ee",
+    "surface": "020304", "surfaceContainerLow": "030507",
+    "surfaceContainer": "04070a", "surfaceContainerHigh": "06090c",
+    "surfaceContainerHighest": "080c0f",
+    "onSurface": "e0e6ee", "onSurfaceVariant": "a5acb3",
+    "outline": "6f767d", "outlineVariant": "42494f",
+    "primary": "a8cbe8", "onPrimary": "20435b",
+    "primaryContainer": "34566f", "onPrimaryContainer": "cbe7ff",
+    "secondaryContainer": "2d3d4a", "onSecondaryContainer": "b0c1d1",
+    "error": "fa746f", "onError": "490006",
+}
+
+
+def load_scheme():
+    """Return the caelestia Material You colour dict (hex, no '#')."""
+    try:
+        with open(SCHEME_PATH) as f:
+            data = json.load(f)
+        cols = data.get("colours") or data.get("colors") or {}
+        merged = dict(_FALLBACK_COLOURS)
+        merged.update({k: v for k, v in cols.items() if isinstance(v, str)})
+        return merged
+    except Exception:  # noqa: BLE001
+        return dict(_FALLBACK_COLOURS)
+
+
+def _rgba(hex6, a=1.0):
+    """'a8cbe8' -> 'rgba(168,203,232,1.0)'. Tolerates a leading '#'."""
+    h = (hex6 or "000000").lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    try:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    except Exception:  # noqa: BLE001
+        r = g = b = 0
+    return f"rgba({r},{g},{b},{a})"
+
+
+def build_css(c):
+    """Generate a Material You (M3) dark CSS sheet from a colour dict.
+
+    Class names are unchanged from the old sheet so every add_css_class()
+    call site keeps working; only the look is re-skinned to M3.
+    """
+    def C(name, a=1.0):
+        return _rgba(c.get(name, _FALLBACK_COLOURS.get(name, "000000")), a)
+
+    return f"""
+/* ---- Material You (caelestia dynamic) ------------------------------- */
+.meowbar-pill {{
+  background: {C('surfaceContainerHigh', 0.92)};
   border-radius: 999px;
   padding: 5px 8px;
-  border: 1px solid rgba(225,242,255,0.65);
-  box-shadow: 0 0 0 1px rgba(80,120,190,0.30),
-              0 8px 30px rgba(20,40,80,0.45),
-              inset 0 1px 0 rgba(255,255,255,0.75);
-}
-.meowbar-gloss {
-  background: linear-gradient(to bottom,
-              rgba(255,255,255,0.55), rgba(255,255,255,0.0) 60%);
-  border-radius: 999px;
-}
-.entry { background: rgba(255,255,255,0.10); border-radius: 999px;
-         border: 1px solid rgba(255,255,255,0.25);
-         color: #0c1a2e; font-size: 15px; padding: 5px 14px; }
-.entry placeholder { color: rgba(20,40,80,0.65); }
-.round-btn { background: rgba(255,255,255,0.22); border-radius: 999px;
+  border: 1px solid {C('outlineVariant', 0.8)};
+  box-shadow: 0 8px 30px rgba(0,0,0,0.55),
+              inset 0 1px 0 {C('outline', 0.15)};
+}}
+.meowbar-gloss {{ background: transparent; border-radius: 999px; }}
+
+.entry {{ background: {C('surfaceContainerHighest', 0.9)}; border-radius: 999px;
+         border: 1px solid {C('outlineVariant', 0.7)};
+         color: {C('onSurface')}; font-size: 15px; padding: 5px 14px;
+         caret-color: {C('primary')}; }}
+.entry:focus-within {{ border: 1px solid {C('primary', 0.9)};
+         box-shadow: 0 0 0 1px {C('primary', 0.4)}; }}
+.entry placeholder {{ color: {C('onSurfaceVariant', 0.8)}; }}
+
+.round-btn {{ background: {C('surfaceContainerHighest', 0.9)}; border-radius: 999px;
              min-width: 34px; min-height: 34px; padding: 0;
-             border: 1px solid rgba(255,255,255,0.30); }
-.round-btn:hover { background: rgba(255,255,255,0.42); }
-.round-btn:active { background: rgba(150,190,250,0.55); }
-.send { background: linear-gradient(to bottom,
-              rgba(150,205,255,0.95), rgba(70,140,235,0.95));
+             color: {C('onSurfaceVariant')};
+             border: 1px solid {C('outlineVariant', 0.6)}; }}
+.round-btn:hover {{ background: {C('secondaryContainer', 0.95)};
+             color: {C('onSecondaryContainer')}; }}
+.round-btn:active {{ background: {C('primaryContainer', 0.95)};
+             color: {C('onPrimaryContainer')}; }}
+
+.send {{ background: {C('primary')};
         border-radius: 999px; min-width: 36px; min-height: 36px; padding: 0;
-        color: #fff; border: 1px solid rgba(255,255,255,0.55);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8); }
-.send:hover { background: linear-gradient(to bottom,
-              rgba(180,222,255,1.0), rgba(95,165,250,1.0)); }
-.send:disabled { opacity: 0.55; }
-.pop { background: rgba(225,240,255,0.95); border-radius: 14px;
-       border: 1px solid rgba(255,255,255,0.7);
-       box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px; min-width: 240px; }
-.pop-title { font-weight: 700; color: #0c1a2e; margin: 2px 6px 8px; }
-.hist-row { padding: 7px 10px; border-radius: 8px; color: #0c1a2e;
-            text-align: left; }
-.hist-row:hover { background: rgba(120,170,250,0.35); }
-.spin { color: #1a3a6a; }
-.rec-on { background: rgba(220,40,40,0.55); box-shadow: 0 0 12px rgba(255,40,40,0.7); }
-.rec-on:hover { background: rgba(240,60,60,0.7); }
-.pop-label { color: #0c1a2e; padding: 2px 6px; }
-.entry2 { background: rgba(255,255,255,0.85); border-radius: 8px;
-          border: 1px solid rgba(80,120,190,0.4); color: #0c1a2e;
-          padding: 6px 10px; }
-.meowbar-reply { background: rgba(225,240,255,0.96); border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.7);
-          box-shadow: 0 10px 40px rgba(20,40,80,0.5); padding: 10px 12px;
-          color: #0c1a2e; margin-top: 6px; }
-.meowbar-reply-scroll { border-radius: 14px; }
-.meowbar-reply-scroll > .meowbar-reply { margin-top: 0; }
-.meowbar-reply-title { font-weight: 700; color: #0c1a2e;
-          margin: 2px 6px 8px; }
+        color: {C('onPrimary')}; border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4); }}
+.send:hover {{ background: {C('primaryContainer')};
+        color: {C('onPrimaryContainer')}; }}
+.send:disabled {{ opacity: 0.5; }}
+
+.pop {{ background: {C('surfaceContainer', 0.98)}; border-radius: 16px;
+       border: 1px solid {C('outlineVariant', 0.7)};
+       box-shadow: 0 12px 44px rgba(0,0,0,0.6); padding: 10px; min-width: 240px;
+       color: {C('onSurface')}; }}
+.pop-title {{ font-weight: 700; color: {C('primary')}; margin: 2px 6px 8px; }}
+.pop-label {{ color: {C('onSurface')}; padding: 2px 6px; }}
+
+.hist-row {{ padding: 7px 10px; border-radius: 10px; color: {C('onSurface')}; }}
+.hist-row:hover {{ background: {C('secondaryContainer', 0.9)};
+            color: {C('onSecondaryContainer')}; }}
+
+.spin {{ color: {C('primary')}; }}
+.rec-on {{ background: {C('error', 0.9)}; color: {C('onError')};
+          box-shadow: 0 0 12px {C('error', 0.6)}; }}
+.rec-on:hover {{ background: {C('error')}; }}
+
+.entry2 {{ background: {C('surfaceContainerHighest', 0.95)}; border-radius: 10px;
+          border: 1px solid {C('outlineVariant', 0.7)};
+          color: {C('onSurface')}; padding: 6px 10px; }}
+.entry2:focus-within {{ border: 1px solid {C('primary', 0.9)}; }}
+
+.meowbar-reply {{ background: {C('surfaceContainer', 0.98)}; border-radius: 16px;
+          border: 1px solid {C('outlineVariant', 0.7)};
+          box-shadow: 0 12px 44px rgba(0,0,0,0.6); padding: 10px 12px;
+          color: {C('onSurface')}; margin-top: 6px; }}
+.meowbar-reply-scroll {{ border-radius: 16px; }}
+.meowbar-reply-scroll > .meowbar-reply {{ margin-top: 0; }}
+.meowbar-reply-title {{ font-weight: 700; color: {C('primary')};
+          margin: 2px 6px 8px; }}
 """
+
+
+# CSS is built at startup from the live palette (see _build_ui).
+CSS = build_css(load_scheme())
 
 # ---- backend calls --------------------------------------------------------
 def chat(prompt, image_path=None):
