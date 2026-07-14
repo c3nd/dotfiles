@@ -11,5 +11,8 @@
                 "command": ["foot", "-a", "aichat", "-T", "aichat", "fish", "-C", "exec aichat"]
             }
         }
+    },
+    "record": {
+        "extraArgs": ["-fallback-cpu-encoding", "yes"]
     }
 }

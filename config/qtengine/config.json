@@ -4,12 +4,12 @@
         "iconTheme": "Papirus-Dark",
         "style": "Darkly",
         "font": {
-            "family": "Sans Serif",
+            "family": "TX-02",
             "size": 12,
             "weight": -1
         },
         "fontFixed": {
-            "family": "Monospace",
+            "family": "TX-02",
             "size": 12,
             "weight": -1
         }

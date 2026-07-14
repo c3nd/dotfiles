@@ -155,6 +155,25 @@
   '';
 
   ##############################################################################
+  # GPU Screen Recorder — KMS capture capability
+  ##############################################################################
+  # gpu-screen-recorder spawns a helper (gsr-kms-server) to grab the screen
+  # via KMS. That helper needs the cap_sys_admin Linux capability. The cap is
+  # normally set in the nixpkgs build, but it gets stripped when the binary
+  # comes from the binary cache (xattrs/caps don't survive cache downloads on
+  # NixOS), so the recorder dies with "kms server died or never started".
+  # Grant it at activation time via a setcap-enabled security wrapper. The
+  # wrapper lands in /run/wrappers/bin (first on PATH), so gsr finds it
+  # ahead of the bare store binary.
+  security.wrappers.gsr-kms-server = {
+    source = "${pkgs.gpu-screen-recorder}/bin/gsr-kms-server";
+    capabilities = "cap_sys_admin=ep";
+    owner = "root";
+    group = "root";
+    permissions = "u+rx,g+rx,o+rx";
+  };
+
+  ##############################################################################
   # Nix settings
   ##############################################################################
   # Enable the experimental `nix-command` + `flakes` features.
