@@ -218,18 +218,22 @@ in
     # PyPI ctranslate2 cu12 wheel can find the system CUDA 12.9 runtime + the
     # libcuda.so driver shim. Runs as the human user (not DynamicUser) because
     # it reads the persistent venv + HF cache under /home/kepler452.
+    # Restart=always (not on-failure) so the unit respawns even after a clean
+    # stop / SIGTERM, and survives transient GPU-memory errors (the server
+    # unloads whisper between requests to share the 4 GB VRAM with LFM).
     systemd.services.meow-stt = {
       description = "meow-stt: faster-whisper (GPU) + Resemblyzer diarization";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
         ExecStart = "${meow-stt-venv-python} ${meow-stt-home}/server.py";
-        Restart = "on-failure";
+        Restart = "always";
         RestartSec = 3;
         User = "kepler452";
         WorkingDirectory = meow-stt-home;
         Environment = [
           "LD_LIBRARY_PATH=${meow-stt-ld}"
+          "MEOW_STT_UNLOAD=1"
           "MEOW_STT_MODEL=small"
           "MEOW_STT_DEVICE=cuda"
           "MEOW_STT_COMPUTE=float32"
