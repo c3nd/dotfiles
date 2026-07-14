@@ -711,7 +711,7 @@ class Bar:
         if keyval == Gdk.KEY_Escape:
             # first Esc closes any reply panel; second Esc hides the bar
             if self.reply_scroll.get_visible():
-                self.reply_scroll.set_visible(False)
+                self._clear_reply()
                 self.entry.set_placeholder_text("Ask me anything…")
                 return True
             self._hide()
@@ -805,6 +805,13 @@ class Bar:
         self.mic_btn.remove_css_class("rec-on")
         self._show_transcript(text, title, segs or [], default_names or {})
         return False
+
+    def _clear_reply(self):
+        """Empty the reply panel AND hide its scroller so no blue
+        `.meowbar-reply` background is left rendered after dismiss/save."""
+        while self.reply_box.get_first_child() is not None:
+            self.reply_box.remove(self.reply_box.get_first_child())
+        self.reply_scroll.set_visible(False)
 
     def _show_transcript(self, text, title, segs=None, default_names=None):
         """Reply panel showing the transcript, an editable title, and a
@@ -903,8 +910,9 @@ class Bar:
             self.reply_box.append(conf)
 
         def do_nosave(b):
-            # dismiss without writing anything; transcript panel hidden
-            self.reply_scroll.set_visible(False)
+            # dismiss without writing anything; empty AND hide the panel so
+            # no reply background is left rendered
+            self._clear_reply()
             self.mic_btn.remove_css_class("rec-on")
             self.entry.set_placeholder_text("🎤 transcript discarded")
 
