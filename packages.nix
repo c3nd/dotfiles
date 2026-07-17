@@ -65,7 +65,7 @@ with pkgs;
   ############################################################################
   krita
   xnviewmp
-  strawberry
+  # kopuz (music player) is installed via the flake — see flake.nix.
   pavucontrol
   fastfetch
   motrix-next

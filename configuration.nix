@@ -179,6 +179,21 @@
   # Enable the experimental `nix-command` + `flakes` features.
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Binary caches: pull prebuilt paths instead of compiling from source.
+  # Keep cache.nixos.org (default) and add public cachix caches.
+  nix.settings.substituters = [
+    "https://cache.nixos.org"
+    "https://nix-community.cachix.org"
+    "https://cuda-maintainers.cachix.org"
+    "https://kopuz.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Z9Iz52rXz24doJeTsuN8bjwc="
+    "cuda-maintainers.cachix.org-1:0dq3bujKpuEPGUMXPcWe6Xsg52TCkEHwhT4SFgdHVR4="
+    "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
+  ];
+
   # Allow unfree packages that this system relies on.
   nixpkgs.config.allowUnfreePredicate = pkg:
     (builtins.elem (lib.getName pkg) [

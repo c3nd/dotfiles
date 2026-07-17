@@ -43,6 +43,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Kopuz music player (Rust, built from source via crane). Ships its own
+    # Cachix cache so we pull prebuilt binaries instead of compiling.
+    kopuz.url = "github:temidaradev/kopuz";
+
     # Misc apps / sources.
     antigravity-nix = {
       url = "github:jacopone/antigravity-nix";
@@ -66,7 +70,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, ... }@inputs:
+  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, kopuz, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -128,6 +132,13 @@
           environment.systemPackages = [
             antigravity-nix.packages.x86_64-linux.default # Base App
             antigravity-nix.packages.x86_64-linux.google-antigravity-cli # CLI
+          ];
+        }
+
+        # ---- Kopuz music player (replaces Strawberry) ---------------------
+        {
+          environment.systemPackages = [
+            kopuz.packages.x86_64-linux.default
           ];
         }
 

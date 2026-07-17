@@ -174,7 +174,7 @@
         }
     },
     "services": {
-        "defaultPlayer": "Strawberry",
+        "defaultPlayer": "Kopuz",
         "gpuType": "NVIDIA",
         "useFahrenheit": true,
         "useFahrenheitPerformance": false,
