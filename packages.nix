@@ -2,7 +2,7 @@
 #
 # Packages are grouped by category for legibility. Add new packages under the
 # most relevant group. `with pkgs;` lets us reference packages by bare name.
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 with pkgs;
 [
   ############################################################################
@@ -66,6 +66,9 @@ with pkgs;
   krita
   xnviewmp
   # kopuz (music player) is installed via the flake — see flake.nix.
+  # buzz (offline Whisper transcription/translation) — CUDA FHS env from the
+  # buzz flake; replaces the old ad-hoc vibe setup.
+  inputs.buzz.packages.${pkgs.stdenv.hostPlatform.system}.default
   pavucontrol
   fastfetch
   motrix-next

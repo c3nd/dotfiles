@@ -65,6 +65,12 @@
       url = "github:redmarklabscom/kuroya?ref=v0.1.6";
       flake = false;
     };
+
+    # Buzz — offline Whisper audio transcription/translation (replaces vibe).
+    buzz = {
+      url = "github:hmahonen/flake-buzz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   ##############################################################################

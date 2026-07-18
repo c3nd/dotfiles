@@ -260,7 +260,7 @@
   # System packages
   ##############################################################################
   # Full list lives in packages.nix (grouped by category).
-  environment.systemPackages = import ./packages.nix { inherit pkgs; };
+  environment.systemPackages = import ./packages.nix { inherit pkgs inputs; };
 
   ##############################################################################
   # State version
