@@ -165,6 +165,13 @@
             "showGpu": true
         }
     },
+    "general": {
+        "apps": {
+            "explorer": [
+                "dolphin"
+            ]
+        }
+    },
     "launcher": {
         "enabled": true,
         "showOnHover": true,
@@ -174,6 +181,8 @@
         }
     },
     "services": {
+        "audioIncrement": 0.02,
+        "brightnessIncrement": 0.05,
         "defaultPlayer": "Kopuz",
         "gpuType": "NVIDIA",
         "useFahrenheit": true,
