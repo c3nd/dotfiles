@@ -70,6 +70,21 @@
     handy = {
       url = "github:cjpais/Handy";
       inputs.nixpkgs.follows = "nixpkgs";
+      # Handy's build pulls bun2nix (flake-parts + treefmt-nix) whose `systems`
+      # input defaults to all 4 platforms incl. x86_64-darwin. Nixpkgs 26.11
+      # dropped x86_64-darwin, so materializing that system crashes the build.
+      # Pin bun2nix's `systems` to the linux-only set — we only need the linux
+      # `packages.handy`. (See: nix-systems/default-linux)
+      inputs.bun2nix.inputs.systems.url = "github:nix-systems/default-linux";
+    };
+
+    # Hermes Agent — native Electron desktop GUI (the `hermes desktop` surface).
+    # Deliberately does NOT `follows = "nixpkgs"`: Hermes' flake-parts `systems`
+    # list includes aarch64-darwin, and we don't want that evaluating the
+    # system's 26.11 nixpkgs (which dropped darwin). Let it use its own nixpkgs
+    # so the package stays self-contained.
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
     };
   };
 
@@ -77,7 +92,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, handy, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, handy, hermes-agent, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -105,7 +120,7 @@
         ./configuration.nix
         ./modules/qtengine.nix
 
-        # ---- Cake Wallet package (enabled below) --------------------------
+        # ---- Cake Wallet package (enabled below) -------------------------
         ./modules/cake-wallet.nix
         {
           programs.cake-wallet.enable = true;
@@ -127,6 +142,13 @@
         {
           environment.systemPackages = [
             kopuz.packages.x86_64-linux.default
+          ];
+        }
+
+        # ---- Hermes desktop GUI (Electron) --------------------------------
+        {
+          environment.systemPackages = [
+            hermes-agent.packages.x86_64-linux.desktop
           ];
         }
 

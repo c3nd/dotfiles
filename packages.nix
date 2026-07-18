@@ -67,6 +67,7 @@ with pkgs;
   xnviewmp
   # kopuz (music player) is installed via the flake — see flake.nix.
   # Handy (offline speech-to-text) is installed via its NixOS module — see flake.nix.
+  # hermes-desktop (Hermes Electron GUI) is installed via the flake — see flake.nix.
   pavucontrol
   fastfetch
   motrix-next
