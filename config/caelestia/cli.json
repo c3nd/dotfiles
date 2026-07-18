@@ -1,7 +1,8 @@
 {
     "enabled" : true,
     "theme" : {
-        "enableGTK": true
+        "enableGTK": true,
+        "postHook": "~/.config/caelestia/fix-qt-font.py"
     },
     "record": {
         "extraArgs": ["-fallback-cpu-encoding", "yes"]
