@@ -117,6 +117,12 @@
           programs.kuroya.enable = true;
         }
 
+        # ---- Buzz offline audio transcription (enabled below) ------------
+        ./modules/buzz.nix
+        {
+          programs.buzz.enable = true;
+        }
+
         # ---- Kopuz music player (replaces Strawberry) ---------------------
         {
           environment.systemPackages = [

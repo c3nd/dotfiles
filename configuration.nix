@@ -26,8 +26,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Run the latest available kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Run the Zen kernel (desktop-tuned scheduler/latency; NVIDIA driver
+  # rebuilds against it via config.boot.kernelPackages).
+  boot.kernelPackages = pkgs.linuxPackages_zen;
 
   ##############################################################################
   # Networking
