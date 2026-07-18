@@ -43,6 +43,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Nix helper CLI (nh) — rebuild/clean/rollback ergonomics.
+    nh = {
+      url = "github:nix-community/nh";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Kopuz music player (Rust, built from source via crane). Ships its own
     # Cachix cache so we pull prebuilt binaries instead of compiling.
     kopuz.url = "github:temidaradev/kopuz";
@@ -65,7 +71,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, ... }@inputs:
+  { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -116,7 +122,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager = {
-            extraSpecialArgs = { inherit inputs; };
+            extraSpecialArgs = { inherit inputs nh; };
             useGlobalPkgs = true;
             useUserPackages = true;
             users.kepler452 = { ... }: {
@@ -138,7 +144,7 @@
     ############################################################################
     homeConfigurations."kepler452" = home-manager.lib.homeManagerConfiguration {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      extraSpecialArgs = { inherit inputs; };
+      extraSpecialArgs = { inherit inputs nh; };
       modules = [
         ./home.nix
         inputs.caelestia-shell.homeManagerModules.default

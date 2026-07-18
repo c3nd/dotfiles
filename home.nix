@@ -123,14 +123,33 @@ in
   ############################################################################
   # Fish shell
   ############################################################################
+  # --- nh (Nix helper) — seamless rebuild/clean/rollback ------------------
+  # Point nh at this flake via immutable store paths so it survives even the
+  # first rebuild (and never falls back to /etc/nixos).
+  home.sessionVariables = {
+    NH_OS_FLAKE = "${inputs.self}#Milkdromeda";
+    NH_HOME_FLAKE = "${inputs.self}#kepler452";
+    # Rebuild needs root; sudo is NOPASSWD for nixos-rebuild/systemctl only.
+    NH_ELEVATION_STRATEGY = "auto";
+  };
   programs.fish = {
     enable = true;
     shellAliases = {
       btw = "echo i use nixos, btw";
       # Commit everything in the dotfiles repo and push to origin/main.
       plspush = "cd ~/dotfiles && git add -A && git commit -m 'autocommit' && git push && cd ~";
+
+      # nh shortcuts — full system vs. user-only, plus housekeeping.
+      nsw = "nh os switch";        # build + activate + set boot default
+      nhm = "nh home switch";      # user-only changes, no sudo
+      nbo = "nh os boot";          # build + set boot default (no activate)
+      nrb = "nh os rollback";      # roll back one generation
+      nif = "nh os info";          # list generations
+      ndry = "nh os switch --dry"; # preview a system switch
+      ncl = "nh clean all -k 3";   # gc: keep 3 generations of every profile
     };
   };
+
 
   ############################################################################
   # Optional AppImage apps (wired, disabled by default)
