@@ -137,7 +137,7 @@
   ##############################################################################
   users.users.kepler452 = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable `sudo` for the user.
+    extraGroups = [ "wheel" "input" ]; # `sudo` + Handy evdev hotkey grab (/dev/uinput).
     packages = with pkgs; [
       tree
     ];

@@ -66,9 +66,7 @@ with pkgs;
   krita
   xnviewmp
   # kopuz (music player) is installed via the flake — see flake.nix.
-  # buzz (offline Whisper transcription/translation) — CUDA FHS env from the
-  # buzz flake; replaces the old ad-hoc vibe setup.
-  inputs.buzz.packages.${pkgs.stdenv.hostPlatform.system}.default
+  # Handy (offline speech-to-text) is installed via its NixOS module — see flake.nix.
   pavucontrol
   fastfetch
   motrix-next

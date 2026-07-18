@@ -66,9 +66,9 @@
       flake = false;
     };
 
-    # Buzz — offline Whisper audio transcription/translation (replaces vibe).
-    buzz = {
-      url = "github:hmahonen/flake-buzz";
+    # Handy — offline speech-to-text (Tauri, Nix-native). Replaces Buzz.
+    handy = {
+      url = "github:cjpais/Handy";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -77,7 +77,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, ... }@inputs:
+  { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, handy, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -117,10 +117,10 @@
           programs.kuroya.enable = true;
         }
 
-        # ---- Buzz offline audio transcription (enabled below) ------------
-        ./modules/buzz.nix
+        # ---- Handy offline speech-to-text (enabled below) ---------------
+        handy.nixosModules.default
         {
-          programs.buzz.enable = true;
+          programs.handy.enable = true;
         }
 
         # ---- Kopuz music player (replaces Strawberry) ---------------------
