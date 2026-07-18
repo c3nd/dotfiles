@@ -47,11 +47,6 @@
     # Cachix cache so we pull prebuilt binaries instead of compiling.
     kopuz.url = "github:temidaradev/kopuz";
 
-    # Misc apps / sources.
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Cake Wallet binary release (non-flake source — `flake = false`).
     cake-wallet-src = {
       url = "https://github.com/cake-tech/cake_wallet/releases/download/v6.1.2/Cake_Wallet_v6.1.2_Linux.tar.xz";
@@ -70,7 +65,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, antigravity-nix, kuroya-src, kopuz, ... }@inputs:
+  { self, nixpkgs, home-manager, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -83,12 +78,6 @@
     # Re-usable via `nixosModules.kuroya`.
     ############################################################################
     nixosModules.kuroya = import ./modules/kuroya.nix;
-
-    ############################################################################
-    # Standalone NixOS module: local TurboQuant llama.cpp + Whisper STT stack.
-    # Re-usable via `nixosModules.llm-stack`.
-    ########################################################################
-    nixosModules.llm-stack = import ./modules/llm-stack.nix;
 
     ############################################################################
     # The system configuration for the `Milkdromeda` host.
@@ -114,25 +103,6 @@
         ./modules/kuroya.nix
         {
           programs.kuroya.enable = true;
-        }
-
-        # ---- Local TurboQuant LLM + Whisper STT stack (enabled below) -----
-        ./modules/llm-stack.nix
-        {
-          services.llm-stack.enable = true;
-          # A/B comparison endpoint (MiniCPM-V 4.6 on :8082) DISABLED:
-          # it eats the last ~2GB of VRAM on the P2000 and leaves whisper
-          # with no headroom (CUDA OOM at inference). Re-enable only if you
-          # want to A/B vision models and can spare the VRAM.
-          services.llm-stack.enableComparison = false;
-        }
-
-        # ---- Antigravity apps (CLI + base app) ----------------------------
-        {
-          environment.systemPackages = [
-            antigravity-nix.packages.x86_64-linux.default # Base App
-            antigravity-nix.packages.x86_64-linux.google-antigravity-cli # CLI
-          ];
         }
 
         # ---- Kopuz music player (replaces Strawberry) ---------------------

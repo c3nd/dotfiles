@@ -203,19 +203,7 @@
       "xnviewmp"
       "p7zip"
       "nvidia-kernel-modules"
-    ])
-    # CUDA toolkit components (unfree, CUDA EULA) — needed by the local
-    # TurboQuant llama.cpp + Whisper STT stack (services.llm-stack).
-    # Match by license so every cuda_*/libcu*/libnpp/… component is covered.
-    || (let
-          lics = let l = pkg.meta.license or [ ];
-                 in if builtins.isList l then l else [ l ];
-        in builtins.any
-             (l: (l.shortName or "") == "cudaEula"
-                 || (l.spdxId or "") == "LicenseRef-CUDA-EULA"
-                 || lib.hasInfix "EULA" (l.fullName or "")
-                 || lib.hasInfix "EULA" (l.shortName or ""))
-             lics);
+    ]);
 
   ##############################################################################
   # System-wide programs
@@ -235,6 +223,27 @@
   ##############################################################################
   # OpenSSH daemon.
   services.openssh.enable = true;
+
+  # Syncthing — continuous file sync (pair with phone / laptop).
+  # Runs as the kepler452 user so it can read/write the home dir + SecondSpot!.
+  # Web UI: http://localhost:8384
+  services.syncthing = {
+    enable = true;
+    user = "kepler452";
+    group = "users";
+    configDir = "/home/kepler452/.config/syncthing";
+    dataDir = "/home/kepler452/.local/share/syncthing";
+    # Pre-declare the music folder as a sync root (id "music").
+    settings = {
+      folders = {
+        music = {
+          path = "/home/kepler452/SecondSpot!/Music";
+          id = "music";
+          label = "Music";
+        };
+      };
+    };
+  };
 
   ##############################################################################
   # Fonts

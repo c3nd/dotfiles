@@ -3,15 +3,6 @@
     "theme" : {
         "enableGTK": true
     },
-    "toggles": {
-        "ai": {
-            "aichat": {
-                "enable": true,
-                "match": [{ "class": "aichat", "workspace": { "name": "special:ai" } }],
-                "command": ["foot", "-a", "aichat", "-T", "aichat", "fish", "-C", "exec aichat"]
-            }
-        }
-    },
     "record": {
         "extraArgs": ["-fallback-cpu-encoding", "yes"]
     }

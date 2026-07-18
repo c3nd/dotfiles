@@ -22,9 +22,6 @@ in
     # AppImage-wrapped apps (enable via programs.<name>.enable below).
     ./modules/atomic-chat.nix
     ./modules/zcode.nix
-
-    # meowbar — native GTK4 layer-shell overlay chat bar (Pluely-style pill).
-    ./modules/meowbar.nix
   ];
 
   ############################################################################
@@ -46,9 +43,6 @@ in
     # Editors
     zed-editor
     calibre
-
-    # Local AI TUI chat (scratchpad, points at llm-stack :8080)
-    aichat
 
     # Prebuilt browsers (from flake inputs)
     inputs.zen-browser.packages.${pkgs.system}.beta
@@ -73,13 +67,6 @@ in
   # Symlink caelestia config dirs into ~/.config.
   xdg.configFile."caelestia" = {
     source = linkConfig "caelestia";
-    force = true;
-    recursive = true;
-  };
-
-  # Local AI TUI chat config (points at llm-stack :8080).
-  xdg.configFile."aichat" = {
-    source = linkConfig "aichat";
     force = true;
     recursive = true;
   };
@@ -154,9 +141,6 @@ in
   ############################################################################
   # programs.atomic-chat.enable = true;
   # programs.zcode.enable = true;
-
-  # meowbar — native GTK4 overlay chat bar (Pluely-style pill, wired to :8080).
-  programs.meowbar.enable = true;
 
   ############################################################################
   # State version

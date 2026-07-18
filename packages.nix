@@ -70,6 +70,7 @@ with pkgs;
   fastfetch
   motrix-next
   equibop
+  nicotine-plus # Soulseek P2P client
 
   ############################################################################
   # Gaming

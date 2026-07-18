@@ -24,6 +24,11 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
+  fileSystems."/home/kepler452/SecondSpot!" =
+    { device = "/dev/disk/by-uuid/3e50342d-d157-42ac-8d53-69fd405d4df8";
+      fsType = "ext4";
+    };
+
   swapDevices =
     [ { device = "/dev/disk/by-uuid/8f698d1f-2615-4197-a5e7-df56edae47ff"; }
     ];
