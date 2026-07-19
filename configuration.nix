@@ -203,6 +203,7 @@
       "cloudflare-warp"
       "xnviewmp"
       "p7zip"
+      "obsidian"
       "nvidia-kernel-modules"
     ]);
 

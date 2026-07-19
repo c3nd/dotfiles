@@ -217,7 +217,11 @@
     # (no sudo / no full system rebuild needed).
     ############################################################################
     homeConfigurations."kepler452" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        # Obsidian is unfree; allow just that package rather than blanket unfree.
+        config.allowUnfreePredicate = p: builtins.elem (nixpkgs.lib.getName p) [ "obsidian" ];
+      };
       extraSpecialArgs = { inherit inputs nh; };
       modules = [
         ./home.nix
