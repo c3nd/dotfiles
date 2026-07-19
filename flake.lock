@@ -259,16 +259,17 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1784413117,
-        "narHash": "sha256-E6tBJE6cQnMxEOIpKvpNUmsi62oXx0NJlvoUScz1Roo=",
+        "lastModified": 1783453001,
+        "narHash": "sha256-4TDyt/2F/QEPAzyMowyxq3VQmejeauiVI3b0W9iFZS8=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "1310ceb07ba43be6ea5466a7c9895d7398af6e4f",
+        "rev": "acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b",
         "type": "github"
       },
       "original": {
         "owner": "NousResearch",
         "repo": "hermes-agent",
+        "rev": "acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b",
         "type": "github"
       }
     },
@@ -961,6 +962,7 @@
         "nh": "nh",
         "nixpkgs": "nixpkgs_4",
         "qtengine": "qtengine",
+        "tldraw-offline-src": "tldraw-offline-src",
         "zen-browser": "zen-browser"
       }
     },
@@ -1028,6 +1030,18 @@
         "owner": "nix-systems",
         "repo": "default-linux",
         "type": "github"
+      }
+    },
+    "tldraw-offline-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-IItPL/c9s4G18Mal8Aoc8mOG7aQUxLFYPcZMWmy0CEw=",
+        "type": "file",
+        "url": "https://github.com/tldraw/tldraw-offline/releases/latest/download/tldraw-offline-linux-x86_64.AppImage"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/tldraw/tldraw-offline/releases/latest/download/tldraw-offline-linux-x86_64.AppImage"
       }
     },
     "treefmt-nix": {

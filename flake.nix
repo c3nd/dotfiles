@@ -78,13 +78,25 @@
       inputs.bun2nix.inputs.systems.url = "github:nix-systems/default-linux";
     };
 
-    # Hermes Agent — native Electron desktop GUI (the `hermes desktop` surface).
+    # tldraw (offline) — follow latest release via /latest/download redirect.
+    # `flake = false` so the input is the AppImage file itself; bump with
+    # `nix flake update tldraw-offline-src` when tldraw ships a new release.
+    tldraw-offline-src = {
+      url = "https://github.com/tldraw/tldraw-offline/releases/latest/download/tldraw-offline-linux-x86_64.AppImage";
+      flake = false;
+    };
     # Deliberately does NOT `follows = "nixpkgs"`: Hermes' flake-parts `systems`
     # list includes aarch64-darwin, and we don't want that evaluating the
     # system's 26.11 nixpkgs (which dropped darwin). Let it use its own nixpkgs
     # so the package stays self-contained.
+    #
+    # Pinned to acfefa4 (0.18.0): the `desktop` package at the unpinned `main`
+    # rev (1310ceb / 0.17.0) fails to build because its transitive `hermes-tui`
+    # has a broken esbuild workspace resolution (`@hermes/shared/charge-
+    # settlement`). 0.18.0 is the exact rev already installed in this machine's
+    # Nix profile (cache hit — no hermesAgent rebuild), and its `desktop` builds.
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:NousResearch/hermes-agent/acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b";
     };
   };
 
@@ -92,7 +104,7 @@
   # Outputs (what this flake produces)
   ##############################################################################
   outputs =
-    { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, handy, hermes-agent, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, cake-wallet-src, brave-previews, kuroya-src, kopuz, handy, hermes-agent, tldraw-offline-src, ... }@inputs:
   {
     ############################################################################
     # Standalone NixOS module: builds the Cake Wallet package from a binary
@@ -136,6 +148,12 @@
         handy.nixosModules.default
         {
           programs.handy.enable = true;
+        }
+
+        # ---- tldraw (offline whiteboard) — AppImage via appimage-run ---
+        ./modules/tldraw-offline.nix
+        {
+          programs.tldraw-offline.enable = true;
         }
 
         # ---- Kopuz music player (replaces Strawberry) ---------------------
