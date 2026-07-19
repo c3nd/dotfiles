@@ -98,6 +98,14 @@
     hermes-agent = {
       url = "github:NousResearch/hermes-agent/acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b";
     };
+
+    # Raw Hermes Agent repo (same rev) used by modules/hermes-desktop.nix to
+    # build the Electron frontend from source + as the backend source root.
+    # flake = false -> exposed as a plain source tree (inputs.hermes-agent-src).
+    hermes-agent-src = {
+      url = "github:NousResearch/hermes-agent/acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b";
+      flake = false;
+    };
   };
 
   ##############################################################################
@@ -117,6 +125,21 @@
     # Re-usable via `nixosModules.kuroya`.
     ############################################################################
     nixosModules.kuroya = import ./modules/kuroya.nix;
+
+    ############################################################################
+    # Standalone NixOS module: builds the Hermes desktop GUI (Electron) from
+    # source and wires it to the working backend + system Electron on Wayland.
+    # Re-usable via `nixosModules.hermes-desktop`.
+    ############################################################################
+    nixosModules.hermes-desktop = import ./modules/hermes-desktop.nix;
+
+    # Expose the assembled hermes-desktop package for direct `nix build
+    # .#hermes-desktop` / verification (also what the module installs).
+    packages.x86_64-linux.hermes-desktop = import ./modules/hermes-desktop-pkg.nix {
+      pkgs = import nixpkgs { system = "x86_64-linux"; };
+      lib = (import nixpkgs { system = "x86_64-linux"; }).lib;
+      inputs = inputs;
+    };
 
     ############################################################################
     # The system configuration for the `Milkdromeda` host.
@@ -163,11 +186,10 @@
           ];
         }
 
-        # ---- Hermes desktop GUI (Electron) --------------------------------
+        # ---- Hermes desktop GUI (Electron) — built from source -----------
+        ./modules/hermes-desktop.nix
         {
-          environment.systemPackages = [
-            hermes-agent.packages.x86_64-linux.desktop
-          ];
+          programs.hermes-desktop.enable = true;
         }
 
         # ---- Home Manager (manages the `kepler452` user) ------------------

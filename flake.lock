@@ -273,6 +273,23 @@
         "type": "github"
       }
     },
+    "hermes-agent-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783453001,
+        "narHash": "sha256-4TDyt/2F/QEPAzyMowyxq3VQmejeauiVI3b0W9iFZS8=",
+        "owner": "NousResearch",
+        "repo": "hermes-agent",
+        "rev": "acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NousResearch",
+        "repo": "hermes-agent",
+        "rev": "acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -955,6 +972,7 @@
         "cake-wallet-src": "cake-wallet-src",
         "handy": "handy",
         "hermes-agent": "hermes-agent",
+        "hermes-agent-src": "hermes-agent-src",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "kopuz": "kopuz",

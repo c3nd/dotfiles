@@ -44,6 +44,9 @@ in
     zed-editor
     calibre
 
+    # Notetaking
+    obsidian
+
     # Prebuilt browsers (from flake inputs)
     inputs.zen-browser.packages.${pkgs.system}.beta
     inputs.brave-previews.packages.${pkgs.system}.brave-nightly
