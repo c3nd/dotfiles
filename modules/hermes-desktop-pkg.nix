@@ -25,7 +25,7 @@ let
   # Build the Electron frontend (apps/desktop) reproducibly from source.
   desktopFrontend = pkgs.buildNpmPackage {
     pname = "hermes-desktop-frontend";
-    version = "0.18.0";
+    version = "0.19.0";
 
     src = hermesSrc;
     npmWorkspace = "apps/desktop";
@@ -61,7 +61,7 @@ let
 
 in pkgs.stdenv.mkDerivation {
   pname = "hermes-desktop";
-  version = "0.18.0";
+  version = "0.19.0";
 
   dontUnpack = true;
   dontBuild = true;

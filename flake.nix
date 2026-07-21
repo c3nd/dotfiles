@@ -90,20 +90,17 @@
     # system's 26.11 nixpkgs (which dropped darwin). Let it use its own nixpkgs
     # so the package stays self-contained.
     #
-    # Pinned to acfefa4 (0.18.0): the `desktop` package at the unpinned `main`
-    # rev (1310ceb / 0.17.0) fails to build because its transitive `hermes-tui`
-    # has a broken esbuild workspace resolution (`@hermes/shared/charge-
-    # settlement`). 0.18.0 is the exact rev already installed in this machine's
-    # Nix profile (cache hit — no hermesAgent rebuild), and its `desktop` builds.
+    # Pinned to main/HEAD (0.19.0, commit 3ef6bbd / 2026.07.21):
+    # 0.17.0 at unpinned main (1310ceb) fails due to broken esbuild workspace
+    # resolution in `hermes-tui` (`@hermes/shared/charge-settlement`).
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent/acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b";
+      url = "github:NousResearch/hermes-agent/3ef6bbd20126";
     };
 
-    # Raw Hermes Agent repo (same rev) used by modules/hermes-desktop.nix to
-    # build the Electron frontend from source + as the backend source root.
-    # flake = false -> exposed as a plain source tree (inputs.hermes-agent-src).
+    # Raw Hermes Agent repo (same rev) used by modules/hermes-desktop-pkg.nix
+    # to build the Electron frontend from source + as the backend source root.
     hermes-agent-src = {
-      url = "github:NousResearch/hermes-agent/acfefa4fdacc8dfc16aed3766c1f7e2db8eda76b";
+      url = "github:NousResearch/hermes-agent/3ef6bbd20126";
       flake = false;
     };
   };
