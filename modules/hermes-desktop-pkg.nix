@@ -29,7 +29,7 @@ let
 
     src = hermesSrc;
     npmWorkspace = "apps/desktop";
-    npmDepsHash = "sha256-qDXGL/INHPW0pTF4SRVL1dS5XVh2X85dEE4JhrAQeqU=";
+    npmDepsHash = "sha256-fKtCPJ45okmHGDKw41sSrhrVe1AUdT7tBMQHu5vfPRA=";
 
     env = {
       # write-build-stamp.cjs reads this and skips `git rev-parse`.
@@ -89,11 +89,11 @@ in pkgs.stdenv.mkDerivation {
     cp -r ${builtDesktop}/. $out/share/hermes-desktop/
 
     # Electron resolves runtime native deps from process.resourcesPath
-    # (= <appdir>/resources). stage-native-deps.cjs builds them under
-    # build/native-deps; electron-builder would ship that via extraResources.
+    # stage-native-deps.cjs builds them under
+    # dist/node_modules/node-pty; electron-builder would ship that via extraResources.
     # We copy it into place so simple-git / node-pty require()s resolve.
     mkdir -p $out/share/hermes-desktop/resources
-    cp -r ${builtDesktop}/build/native-deps $out/share/hermes-desktop/resources/native-deps
+    cp -r ${builtDesktop}/dist/node_modules/node-pty $out/share/hermes-desktop/resources/node-pty
 
     # Launcher.
     makeWrapper ${pkgs.electron_41}/bin/electron $out/bin/hermes-desktop \
