@@ -19,18 +19,26 @@ with lib;
 let
   cfg = config.programs.openvsp;
 
-  code-eli = pkgs.runCommand "code-eli-0.3.6" {
+  code-eli = pkgs.stdenv.mkDerivation {
+    pname = "code-eli";
+    version = "0.3.6";
+
     src = pkgs.fetchzip {
       url = "https://github.com/OpenVSP/OpenVSP/raw/OpenVSP_${cfg.version}/Libraries/Code-Eli-f6aefa912d58.zip";
       sha256 = "sha256-GJ3C3n3enVsNb/Nj1XMMP+S1AI4VO9y+ue9hBa5XPaM=";
     };
-    buildInputs = [ pkgs.cmake ];
-  } ''
-    mkdir -p $out/include/eli
-    cp -R $src/include/eli/* $out/include/eli/
-    cmake -S $src -B ./build -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-    cp ./build/include/eli/code_eli.hpp $out/include/eli/
-  '';
+
+    nativeBuildInputs = [ pkgs.cmake ];
+    buildInputs = [ pkgs.eigen ];
+
+    cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUT=3.5" ];
+
+    installPhase = ''
+      mkdir -p $out/include/eli
+      cp -R $src/include/eli/* $out/include/eli/
+      cp ./build/include/eli/code_eli.hpp $out/include/eli/
+    '';
+  };
 
   openvsp-pkg = pkgs.stdenv.mkDerivation {
     pname = "openvsp";
