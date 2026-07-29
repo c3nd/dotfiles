@@ -28,15 +28,18 @@ let
       sha256 = "sha256-GJ3C3n3enVsNb/Nj1XMMP+S1AI4VO9y+ue9hBa5XPaM=";
     };
 
-    nativeBuildInputs = [ pkgs.cmake ];
     buildInputs = [ pkgs.eigen ];
-
-    cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUT=3.5" ];
 
     installPhase = ''
       mkdir -p $out/include/eli
       cp -R $src/include/eli/* $out/include/eli/
-      cp ./build/include/eli/code_eli.hpp $out/include/eli/
+      sed -e "s|@ELI_VERSION_MAJOR@|0|g" \
+          -e "s|@ELI_VERSION_MINOR@|3|g" \
+          -e "s|@ELI_VERSION_PATCH@|6|g" \
+          -e "s|@ELI_BUILD_DATE@|19700101|g" \
+          -e "s|@ELI_BUILD_TIME@|000000|g" \
+          < $src/cmake/code_eli.hpp.in \
+          > $out/include/eli/code_eli.hpp
     '';
   };
 
