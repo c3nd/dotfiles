@@ -56,6 +56,7 @@ let
       "-DVSP_USE_SYSTEM_EIGEN=ON"
       "-DANGELSCRIPT_INSTALL_DIR=${angelscript}"
       "-DCMINPACK_INSTALL_DIR=${cminpack}"
+      "-DCMAKE_PREFIX_PATH=${cminpack};${angelscript}"
     ];
 
     meta = with lib; {
