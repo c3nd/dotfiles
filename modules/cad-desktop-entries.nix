@@ -19,7 +19,7 @@ let
   desktopEntry = name: binaryPath: displayName: iconName: generic: categories: isTerminal: packageDescription:
     pkgs.makeDesktopItem {
       inherit name;
-      categories = builtins.splitString ";" categories;
+      categories = lib.splitString ";" categories;
       desktopName = displayName;
       exec = binaryPath;
       icon = iconName;
@@ -30,10 +30,10 @@ let
       type = "Application";
     };
 
-  freecad = desktopEntry "freecad" "${pkgs.freecad}/bin/FreeCAD" "FreeCAD" "freecad" "3D CAD Modeler" "Graphics;CAD;Engineering;" false "General purpose Open Source 3D CAD/MCAD modeler";
-  librecad = desktopEntry "librecad" "${pkgs.librecad}/bin/librecad" "LibreCAD" "librecad" "2D CAD Drafting" "Graphics;CAD;Engineering;" false "2D CAD package based on Qt";
-  openscad = desktopEntry "openscad" "${pkgs.openscad}/bin/openscad" "OpenSCAD" "openscad" "3D Parametric Modeler" "Graphics;CAD;Engineering;" false "3D parametric model compiler";
-  gmsh = desktopEntry "gmsh" "${pkgs.gmsh}/bin/gmsh" "Gmsh" "gmsh" "3D Mesh Generator" "Science;Physics;Engineering;CAD;" false "Three-dimensional finite element mesh generator";
+  freecad = desktopEntry "freecad" "${pkgs.freecad}/bin/FreeCAD" "FreeCAD" "freecad" "3D CAD Modeler" "Graphics;Engineering;" false "General purpose Open Source 3D CAD/MCAD modeler";
+  librecad = desktopEntry "librecad" "${pkgs.librecad}/bin/librecad" "LibreCAD" "librecad" "2D CAD Drafting" "Graphics;Engineering;" false "2D CAD package based on Qt";
+  openscad = desktopEntry "openscad" "${pkgs.openscad}/bin/openscad" "OpenSCAD" "openscad" "3D Parametric Modeler" "Graphics;Engineering;" false "3D parametric model compiler";
+  gmsh = desktopEntry "gmsh" "${pkgs.gmsh}/bin/gmsh" "Gmsh" "gmsh" "3D Mesh Generator" "Science; Engineering;" false "Three-dimensional finite element mesh generator";
 
   openvsp = pkgs.makeDesktopItem {
     name = "openvsp";
