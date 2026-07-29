@@ -25,8 +25,7 @@ let
       repo = "OpenVSP";
       rev = "OpenVSP_${cfg.version}";
       fetchSubmodules = true; # bundled sub-deps in tree
-      # leave sha256 as lib.fakeHash initially; first build prints real one
-      hash = lib.fakeHash;
+      sha256 = "sha256-p5NJWGaRMUc/HnyQEXHr1qitD6nKkIw4R/3VxgMX01s=";
     };
 
     nativeBuildInputs = with pkgs; [
