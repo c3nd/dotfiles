@@ -23,7 +23,7 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "OpenVSP";
       repo = "OpenVSP";
-      rev = "v${cfg.version}";
+      rev = "OpenVSP_${cfg.version}";
       fetchSubmodules = true; # bundled sub-deps in tree
       # leave sha256 as lib.fakeHash initially; first build prints real one
       hash = lib.fakeHash;
@@ -71,8 +71,8 @@ in
 
     version = mkOption {
       type = types.str;
-      default = "3.35.0";
-      description = "OpenVSP release tag to build (no leading 'v').";
+      default = "3.51.2";
+      description = "OpenVSP release tag to build (no leading 'v' or `OpenVSP_` prefix here).";
     };
 
     package = mkOption {
