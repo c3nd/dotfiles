@@ -130,6 +130,8 @@
     ############################################################################
     nixosModules.hermes-desktop = import ./modules/hermes-desktop.nix;
 
+    nixosModules.openvsp = import ./modules/openvsp.nix;
+
     # Expose the assembled hermes-desktop package for direct `nix build
     # .#hermes-desktop` / verification (also what the module installs).
     packages.x86_64-linux.hermes-desktop = import ./modules/hermes-desktop-pkg.nix {
@@ -187,6 +189,16 @@
         ./modules/hermes-desktop.nix
         {
           programs.hermes-desktop.enable = true;
+        }
+
+        # ---- OpenVSP (AppImage wrapper — URL/hash must be set) -----------
+        ./modules/openvsp.nix
+        {
+          programs.openvsp.enable = true;
+          programs.openvsp.version = "3.35.0";
+          # Replace `url` and `hash` once you confirm the Linux AppImage:
+          # programs.openvsp.url    = "https://.../OpenVSP-3.35.0-Linux.AppImage";
+          # programs.openvsp.hash   = "sha256-...";
         }
 
         # ---- Home Manager (manages the `kepler452` user) ------------------
