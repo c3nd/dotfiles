@@ -1,12 +1,8 @@
 # CAD desktop entries — NixOS module
 #
 # Adds .desktop files for CAD tools that need them so they show up in the
-# app launcher. The nixpkgs versions of several GUI CAD apps skip the
-# .desktop file; we install explicit ones here for FreeCAD, LibreCAD,
-# OpenSCAD, Gmsh, and OpenVSP.
-#
-# Usage:
-#   programs.cad-desktop-entries.enable = true;
+# app launcher. Writes .desktop files directly via writeTextFile to avoid
+# strict desktop-entry validation in makeDesktopItem.
 #
 { config, lib, pkgs, ... }:
 
@@ -15,38 +11,68 @@ with lib;
 let
   cfg = config.programs.cad-desktop-entries;
 
-  # Helper aligned with nixpkgs makeDesktopItem conventions.
-  desktopEntry = name: binaryPath: displayName: iconName: generic: categories: isTerminal: packageDescription:
-    pkgs.makeDesktopItem {
+  desktopFile = name: binaryPath: displayName: iconName: genericName: categoriesList: isTerminal: packageDescription:
+    pkgs.writeTextFile {
       inherit name;
-      categories = lib.splitString ";" categories;
-      desktopName = displayName;
-      exec = binaryPath;
-      icon = iconName;
-      genericName = generic;
-      terminal = isTerminal;
-      comment = packageDescription;
-      startupNotify = true;
-      type = "Application";
+      destination = "/share/applications/${name}.desktop";
+      text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=${displayName}
+        GenericName=${genericName}
+        Comment=${packageDescription}
+        Exec=${binaryPath}
+        Icon=${iconName}
+        Terminal=${if isTerminal then "true" else "false"}
+        StartupNotify=true
+        Categories=${categoriesList};
+      '';
     };
 
-  freecad = desktopEntry "freecad" "${pkgs.freecad}/bin/FreeCAD" "FreeCAD" "freecad" "3D CAD Modeler" "Graphics;Engineering;" false "General purpose Open Source 3D CAD/MCAD modeler";
-  librecad = desktopEntry "librecad" "${pkgs.librecad}/bin/librecad" "LibreCAD" "librecad" "2D CAD Drafting" "Graphics;Engineering;" false "2D CAD package based on Qt";
-  openscad = desktopEntry "openscad" "${pkgs.openscad}/bin/openscad" "OpenSCAD" "openscad" "3D Parametric Modeler" "Graphics;Engineering;" false "3D parametric model compiler";
-  gmsh = desktopEntry "gmsh" "${pkgs.gmsh}/bin/gmsh" "Gmsh" "gmsh" "3D Mesh Generator" "Science; Engineering;" false "Three-dimensional finite element mesh generator";
+  freecad = desktopFile "freecad"
+    "${pkgs.freecad}/bin/FreeCAD"
+    "FreeCAD"
+    "freecad"
+    "3D CAD Modeler"
+    "Graphics;Engineering"
+    false
+    "General purpose Open Source 3D CAD/MCAD modeler";
 
-  openvsp = pkgs.makeDesktopItem {
-    name = "openvsp";
-    desktopName = "OpenVSP";
-    exec = "${config.programs.openvsp.package}/bin/vsp";
-    icon = "openvsp";
-    genericName = "Aerospace Vehicle Conceptual Design";
-    categories = [ "Science" "Physics" "Engineering" "CAD" "Aviation" ];
-    terminal = false;
-    comment = "Parametric aircraft/spacecraft geometry tool";
-    startupNotify = true;
-    type = "Application";
-  };
+  librecad = desktopFile "librecad"
+    "${pkgs.librecad}/bin/librecad"
+    "LibreCAD"
+    "librecad"
+    "2D CAD Drafting"
+    "Graphics;Engineering"
+    false
+    "2D CAD package based on Qt";
+
+  openscad = desktopFile "openscad"
+    "${pkgs.openscad}/bin/openscad"
+    "OpenSCAD"
+    "openscad"
+    "3D Parametric Modeler"
+    "Graphics;Engineering"
+    false
+    "3D parametric model compiler";
+
+  gmsh = desktopFile "gmsh"
+    "${pkgs.gmsh}/bin/gmsh"
+    "Gmsh"
+    "gmsh"
+    "3D Mesh Generator"
+    "Science;Engineering"
+    false
+    "Three-dimensional finite element mesh generator";
+
+  openvsp = desktopFile "openvsp"
+    "${config.programs.openvsp.package}/bin/vsp"
+    "OpenVSP"
+    "openvsp"
+    "Aerospace Vehicle Conceptual Design"
+    "Science;Engineering"
+    false
+    "Parametric aircraft/spacecraft geometry tool";
 
 in
 {
