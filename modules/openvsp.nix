@@ -28,7 +28,7 @@ let
   } ''
     mkdir -p $out/include/eli
     cp -R $src/include/eli/* $out/include/eli/
-    cmake -S $src -B ./build
+    cmake -S $src -B ./build -DCMAKE_POLICY_VERSION_MINIMUM=3.5
     cp ./build/include/eli/code_eli.hpp $out/include/eli/
   '';
 
