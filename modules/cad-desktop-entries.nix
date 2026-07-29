@@ -18,7 +18,8 @@ let
   # Helper aligned with nixpkgs makeDesktopItem conventions.
   desktopEntry = name: binaryPath: displayName: iconName: generic: categories: isTerminal: packageDescription:
     pkgs.makeDesktopItem {
-      inherit name categories;
+      inherit name;
+      categories = builtins.splitString ";" categories;
       desktopName = displayName;
       exec = binaryPath;
       icon = iconName;
