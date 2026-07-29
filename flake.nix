@@ -130,8 +130,6 @@
     ############################################################################
     nixosModules.hermes-desktop = import ./modules/hermes-desktop.nix;
 
-    nixosModules.openvsp = import ./modules/openvsp.nix;
-
     nixosModules.cad-desktop-entries = import ./modules/cad-desktop-entries.nix;
 
     # Expose the assembled hermes-desktop package for direct `nix build
@@ -191,13 +189,6 @@
         ./modules/hermes-desktop.nix
         {
           programs.hermes-desktop.enable = true;
-        }
-
-        # ---- OpenVSP (source build via CMake — set version above) --------
-        ./modules/openvsp.nix
-        {
-          programs.openvsp.enable = true;
-          programs.openvsp.version = "3.51.2";
         }
 
         # ---- Desktop entries for CAD tools that don't ship one ------------
