@@ -47,6 +47,7 @@ let
       libxkbcommon
       wayland
       pkg-config
+      angelscript
     ];
 
     cmakeFlags = with pkgs; [
