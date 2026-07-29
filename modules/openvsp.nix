@@ -57,6 +57,8 @@ let
       "-DANGELSCRIPT_INSTALL_DIR=${angelscript}"
       "-DCMINPACK_INSTALL_DIR=${cminpack}"
       "-DCMAKE_PREFIX_PATH=${cminpack};${angelscript}"
+      "-DCMAKE_LIBRARY_PATH=${cminpack}/lib"
+      "-DCMAKE_INCLUDE_PATH=${cminpack}/include;${angelscript}/include"
     ];
 
     meta = with lib; {
