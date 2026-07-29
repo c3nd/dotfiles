@@ -48,12 +48,14 @@ let
       wayland
       pkg-config
       angelscript
+      cminpack
     ];
 
     cmakeFlags = with pkgs; [
       "-DCMAKE_BUILD_TYPE=Release"
       "-DVSP_USE_SYSTEM_EIGEN=ON"
-      "-DCMAKE_PREFIX_PATH=${angelscript}"
+      "-DANGELSCRIPT_INSTALL_DIR=${angelscript}"
+      "-DCMINPACK_INSTALL_DIR=${cminpack}"
     ];
 
     meta = with lib; {
