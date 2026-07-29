@@ -15,62 +15,24 @@ with lib;
 let
   cfg = config.programs.cad-desktop-entries;
 
-  # Helper aligned with nixpkgs makeDesktopEntry conventions.
-  desktopEntry = pkgs.makeDesktopEntry {
-    name = name;
-    desktopName = displayName;
-    exec = binaryPath;
-    icon = iconName;
-    genericName = generic;
-    categories = categories;
-    terminal = isTerminal;
-    comment = packageDescription;
-    startupNotify = true;
-  };
+  # Helper aligned with nixpkgs makeDesktopItem conventions.
+  desktopEntry = name: binaryPath: displayName: iconName: generic: categories: isTerminal: packageDescription:
+    pkgs.makeDesktopItem {
+      inherit name categories;
+      desktopName = displayName;
+      exec = binaryPath;
+      icon = iconName;
+      genericName = generic;
+      terminal = isTerminal;
+      comment = packageDescription;
+      startupNotify = true;
+      type = "Application";
+    };
 
-  freecad = desktopEntry {
-    name = "freecad";
-    displayName = "FreeCAD";
-    binaryPath = "${pkgs.freecad}/bin/FreeCAD";
-    icon = "freecad";
-    generic = "3D CAD Modeler";
-    categories = "Graphics;CAD;Engineering;";
-    isTerminal = false;
-    packageDescription = "General purpose Open Source 3D CAD/MCAD modeler";
-  };
-
-  librecad = desktopEntry {
-    name = "librecad";
-    displayName = "LibreCAD";
-    binaryPath = "${pkgs.librecad}/bin/librecad";
-    icon = "librecad";
-    generic = "2D CAD Drafting";
-    categories = "Graphics;CAD;Engineering;";
-    isTerminal = false;
-    packageDescription = "2D CAD package based on Qt";
-  };
-
-  openscad = desktopEntry {
-    name = "openscad";
-    displayName = "OpenSCAD";
-    binaryPath = "${pkgs.openscad}/bin/openscad";
-    icon = "openscad";
-    generic = "3D Parametric Modeler";
-    categories = "Graphics;CAD;Engineering;";
-    isTerminal = false;
-    packageDescription = "3D parametric model compiler";
-  };
-
-  gmsh = desktopEntry {
-    name = "gmsh";
-    displayName = "Gmsh";
-    binaryPath = "${pkgs.gmsh}/bin/gmsh";
-    icon = "gmsh";
-    generic = "3D Mesh Generator";
-    categories = "Science;Physics;Engineering;CAD;";
-    isTerminal = false;
-    packageDescription = "Three-dimensional finite element mesh generator";
-  };
+  freecad = desktopEntry "freecad" "${pkgs.freecad}/bin/FreeCAD" "FreeCAD" "freecad" "3D CAD Modeler" "Graphics;CAD;Engineering;" false "General purpose Open Source 3D CAD/MCAD modeler";
+  librecad = desktopEntry "librecad" "${pkgs.librecad}/bin/librecad" "LibreCAD" "librecad" "2D CAD Drafting" "Graphics;CAD;Engineering;" false "2D CAD package based on Qt";
+  openscad = desktopEntry "openscad" "${pkgs.openscad}/bin/openscad" "OpenSCAD" "openscad" "3D Parametric Modeler" "Graphics;CAD;Engineering;" false "3D parametric model compiler";
+  gmsh = desktopEntry "gmsh" "${pkgs.gmsh}/bin/gmsh" "Gmsh" "gmsh" "3D Mesh Generator" "Science;Physics;Engineering;CAD;" false "Three-dimensional finite element mesh generator";
 
   openvsp = mkIf config.programs.openvsp.enable (pkgs.makeDesktopEntry {
     name = "openvsp";
