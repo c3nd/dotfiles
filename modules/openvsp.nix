@@ -28,8 +28,8 @@ let
   } ''
     mkdir -p $out/include/eli
     cp -R $src/include/eli/* $out/include/eli/
-    cmake -S $src -B $build
-    cp $build/include/eli/code_eli.hpp $out/include/eli/
+    cmake -S $src -B ./build
+    cp ./build/include/eli/code_eli.hpp $out/include/eli/
   '';
 
   openvsp-pkg = pkgs.stdenv.mkDerivation {
