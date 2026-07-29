@@ -34,16 +34,17 @@ let
   openscad = desktopEntry "openscad" "${pkgs.openscad}/bin/openscad" "OpenSCAD" "openscad" "3D Parametric Modeler" "Graphics;CAD;Engineering;" false "3D parametric model compiler";
   gmsh = desktopEntry "gmsh" "${pkgs.gmsh}/bin/gmsh" "Gmsh" "gmsh" "3D Mesh Generator" "Science;Physics;Engineering;CAD;" false "Three-dimensional finite element mesh generator";
 
-  openvsp = mkIf config.programs.openvsp.enable (pkgs.makeDesktopEntry {
+  openvsp = mkIf config.programs.openvsp.enable (pkgs.makeDesktopItem {
     name = "openvsp";
     desktopName = "OpenVSP";
     exec = "${config.programs.openvsp.package}/bin/vsp";
     icon = "openvsp";
-    generic = "Aerospace Vehicle Conceptual Design";
+    genericName = "Aerospace Vehicle Conceptual Design";
     categories = "Science;Physics;Engineering;CAD;Aviation;";
     terminal = false;
     comment = "Parametric aircraft/spacecraft geometry tool";
     startupNotify = true;
+    type = "Application";
   });
 
 in
