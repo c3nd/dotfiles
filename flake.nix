@@ -191,14 +191,11 @@
           programs.hermes-desktop.enable = true;
         }
 
-        # ---- OpenVSP (AppImage wrapper — URL/hash must be set) -----------
+        # ---- OpenVSP (source build via CMake — set version above) --------
         ./modules/openvsp.nix
         {
           programs.openvsp.enable = true;
           programs.openvsp.version = "3.35.0";
-          # Replace `url` and `hash` once you confirm the Linux AppImage:
-          # programs.openvsp.url    = "https://.../OpenVSP-3.35.0-Linux.AppImage";
-          # programs.openvsp.hash   = "sha256-...";
         }
 
         # ---- Home Manager (manages the `kepler452` user) ------------------
