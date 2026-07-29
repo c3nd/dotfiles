@@ -132,6 +132,8 @@
 
     nixosModules.openvsp = import ./modules/openvsp.nix;
 
+    nixosModules.cad-desktop-entries = import ./modules/cad-desktop-entries.nix;
+
     # Expose the assembled hermes-desktop package for direct `nix build
     # .#hermes-desktop` / verification (also what the module installs).
     packages.x86_64-linux.hermes-desktop = import ./modules/hermes-desktop-pkg.nix {
@@ -195,7 +197,13 @@
         ./modules/openvsp.nix
         {
           programs.openvsp.enable = true;
-          programs.openvsp.version = "3.35.0";
+          programs.openvsp.version = "3.51.2";
+        }
+
+        # ---- Desktop entries for CAD tools that don't ship one ------------
+        ./modules/cad-desktop-entries.nix
+        {
+          programs.cad-desktop-entries.enable = true;
         }
 
         # ---- Home Manager (manages the `kepler452` user) ------------------
