@@ -53,6 +53,7 @@ let
     cmakeFlags = with pkgs; [
       "-DCMAKE_BUILD_TYPE=Release"
       "-DVSP_USE_SYSTEM_EIGEN=ON"
+      "-DANGELSCRIPT_INSTALL_DIR=${angelscript}"
     ];
 
     meta = with lib; {
