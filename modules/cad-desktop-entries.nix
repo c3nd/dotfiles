@@ -65,19 +65,10 @@ let
     false
     "Three-dimensional finite element mesh generator";
 
-  openvsp = desktopFile "openvsp"
-    "${config.programs.openvsp.package}/bin/vsp"
-    "OpenVSP"
-    "openvsp"
-    "Aerospace Vehicle Conceptual Design"
-    "Science;Engineering"
-    false
-    "Parametric aircraft/spacecraft geometry tool";
-
 in
 {
   options.programs.cad-desktop-entries = {
-    enable = mkEnableOption "CAD desktop entries for FreeCAD/LibreCAD/OpenSCAD/Gmsh/OpenVSP";
+    enable = mkEnableOption "CAD desktop entries for FreeCAD/LibreCAD/OpenSCAD/Gmsh";
   };
 
   config = mkIf cfg.enable {
@@ -86,7 +77,6 @@ in
       librecad
       openscad
       gmsh
-      openvsp
     ];
   };
 }
