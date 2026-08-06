@@ -46,6 +46,15 @@
 
   services.hyprpolkitagent.enable = false;
 
+  # X11 speech-to-text via xbindkeys + faster-whisper
+  # Handy is Wayland-only; replaced on Cassiopeia with X11-native stack.
+  services.xbindkeys.enable = true;
+  xdg.configFile."xbindkeysrc" = {
+    source = ../../config/xbindkeysrc;
+    recursive = false;
+    force = true;
+  };
+
   xdg.configFile."wmaker" = {
     source = ../../config/wmaker;
     recursive = true;

@@ -1,0 +1,38 @@
+# Cassiopeia WindowMaker keybindings
+# Mirrors Hyprland Super-based layout using Mod3.
+# X11 speech-to-text uses xbindkeys + faster-whisper + wtype.
+
+{
+  "Mod3+Return" = "exec xterm";
+  "Mod3+q" = "close";
+  "Mod3+Shift+q" = "kill";
+  "Mod3+e" = "exec thunar";
+  "Mod3+d" = "exec fuzzel";
+  "Mod3+f" = "fullscreen";
+  "Mod3+Shift+Space" = "exec faster-whisper-toggle";
+  "Mod3+Shift+p" = "exec faster-whisper-postprocess";
+  "Mod3+Shift+Escape" = "exec faster-whisper-cancel";
+  "Mod3+Left" = "left";
+  "Mod3+Right" = "right";
+  "Mod3+Up" = "up";
+  "Mod3+Down" = "down";
+  "Mod3+Shift+Left" = "send_left";
+  "Mod3+Shift+Right" = "send_right";
+  "Mod3+Shift+Up" = "send_up";
+  "Mod3+Shift+Down" = "send_down";
+  "Mod3+h" = "hide";
+  "Mod3+m" = "maximize";
+  "Mod3+s" = "shade";
+  "Mod3+1" = "workspace_1";
+  "Mod3+2" = "workspace_2";
+  "Mod3+3" = "workspace_3";
+  "Mod3+4" = "workspace_4";
+  "Mod3+5" = "workspace_5";
+  "Mod3+6" = "workspace_6";
+  "Mod3+7" = "workspace_7";
+  "Mod3+8" = "workspace_8";
+  "Mod3+9" = "workspace_9";
+  "Mod3+0" = "workspace_10";
+  "Mod3+Tab" = "next";
+  "Mod3+Shift+Tab" = "prev";
+}

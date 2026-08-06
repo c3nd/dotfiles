@@ -54,6 +54,21 @@
     };
   };
 
+  # X11 global hotkeys + speech-to-text stack
+  # Handy is Wayland-only; on X11/WindowMaker we use xbindkeys + faster-whisper
+  # + wtype to inject text. SUPER/Mod3 bindings mirror Hyprland's layout.
+  services.xbindkeys.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    nh
+    faster-whisper
+    xbindkeys
+    wtype
+    alsa-utils
+    pavucontrol
+    ffmpeg
+  ];
+
   users.users.kepler452 = {
     isNormalUser = true;
     extraGroups = [ "wheel" "input" "video" ];
