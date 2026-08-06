@@ -7,6 +7,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    inputs.openwhispr.nixosModules.default
   ];
 
   networking.hostName = "Cassiopeia";
