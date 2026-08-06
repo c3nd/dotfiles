@@ -130,6 +130,8 @@
     ############################################################################
     nixosModules.hermes-desktop = import ./modules/hermes-desktop.nix;
 
+    nixosModules.cad-desktop-entries = import ./modules/cad-desktop-entries.nix;
+
     # Expose the assembled hermes-desktop package for direct `nix build
     # .#hermes-desktop` / verification (also what the module installs).
     packages.x86_64-linux.hermes-desktop = import ./modules/hermes-desktop-pkg.nix {
@@ -187,6 +189,12 @@
         ./modules/hermes-desktop.nix
         {
           programs.hermes-desktop.enable = true;
+        }
+
+        # ---- Desktop entries for CAD tools that don't ship one ------------
+        ./modules/cad-desktop-entries.nix
+        {
+          programs.cad-desktop-entries.enable = true;
         }
 
         # ---- Home Manager (manages the `kepler452` user) ------------------

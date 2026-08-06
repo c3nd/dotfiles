@@ -91,11 +91,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784343464,
-        "narHash": "sha256-nCbqEHtKdC+K7Nm55s1NtvW8pjMkN/ln9y53DJWnfVY=",
+        "lastModified": 1784950224,
+        "narHash": "sha256-kAblkqaFzElLUXjA1Mh/FAWW2643bF2ZVINJjLx/MA0=",
         "owner": "caelestia-dots",
         "repo": "cli",
-        "rev": "0f20487cba585950de850d76e5ced63628453a36",
+        "rev": "c788ba3ab83767b0fd44dcb323875121c313e674",
         "type": "github"
       },
       "original": {
@@ -114,11 +114,11 @@
         "quickshell": "quickshell"
       },
       "locked": {
-        "lastModified": 1784448133,
-        "narHash": "sha256-vuElQeGNDrHGiHMRXhLFu6iCeOgbpw1dOc0HXj///Q0=",
+        "lastModified": 1785140775,
+        "narHash": "sha256-H3jQog6kdTD/3O+ySlN3z0b2pOHFj/7O+joK2K9wByM=",
         "owner": "caelestia-dots",
         "repo": "shell",
-        "rev": "027808004091e1d20f3f2e65b3598357cd52acae",
+        "rev": "fbb3d1be076b34b7e83e4470f4ef3b76a10ec496",
         "type": "github"
       },
       "original": {
@@ -236,11 +236,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784594107,
-        "narHash": "sha256-BJHBnssWC/ArxTA9t9CONMV7QoMd7yeSyeSEb/MUa0Y=",
+        "lastModified": 1785233182,
+        "narHash": "sha256-P6FthXs3e6M+zhrdt+26mSgeEgl1XSxMi/y2/jvqTd8=",
         "owner": "cjpais",
         "repo": "Handy",
-        "rev": "0470d9ad1745ae25af6b50d4cad9affd0d1acc65",
+        "rev": "ea3c20a3a67c7401d8b19198723760da9d40ac45",
         "type": "github"
       },
       "original": {
@@ -297,11 +297,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784588016,
-        "narHash": "sha256-ouZe80aWEhMLVMkqICFDN+JUw+0FJtCr/bh+hHtRtMg=",
+        "lastModified": 1785269816,
+        "narHash": "sha256-6JkNDlJ18NY1iAuoSYCPDO7O+yYN/vPwpFmHOHNpVvY=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "deeb6b7eb7e0c44ae1819c051ce175bd92a85100",
+        "rev": "3d25fa94cf355cf7da64c77bb9c3c15806486329",
         "type": "github"
       },
       "original": {
@@ -406,11 +406,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1784574265,
-        "narHash": "sha256-3YP21xUS7i/FOZRNh3SqXAw7Icw8biu3BWN+YWqLMkI=",
+        "lastModified": 1785268604,
+        "narHash": "sha256-voZBWiMj6xIx4rX0bb6TKiTmwPzhBBXZun0LG5Ym9sM=",
         "owner": "hyprwm",
         "repo": "Hyprland",
-        "rev": "2174f26a142d32823ceb8d7039e39eef52dbd050",
+        "rev": "924a35735ebadd67c8a078042060fe7e6ba7e060",
         "type": "github"
       },
       "original": {
@@ -672,11 +672,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1784389989,
-        "narHash": "sha256-l3NcXIyYAp86a6zUNKoLJWrxbQUImfbZ5Myi40iYUpc=",
+        "lastModified": 1785234708,
+        "narHash": "sha256-q8770ay1+z2twTOKZtcMD2AmQSHsfm6wrvb8wzq6z+4=",
         "owner": "temidaradev",
         "repo": "kopuz",
-        "rev": "8d36a387146d3b04cbe92e4db2a320aef9bf9a27",
+        "rev": "edcac040f91eb601616337ab0a168725e682c81f",
         "type": "github"
       },
       "original": {
@@ -726,11 +726,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784571507,
-        "narHash": "sha256-APB3LPNwOgVYVdeKPSclDf4szM+kkxUna14Rj2Wjnzg=",
+        "lastModified": 1785260147,
+        "narHash": "sha256-YmdqPJCgpZ4VlOHOEDr0TY3+RL73bB2ohXKTXqAqTCQ=",
         "owner": "nix-community",
         "repo": "nh",
-        "rev": "beb4e4eb949f21e4186e2e2295cf1a74624f23f8",
+        "rev": "058f611eef42c4fd729f3a73a848e3fa6e975da7",
         "type": "github"
       },
       "original": {
@@ -801,11 +801,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1784497964,
-        "narHash": "sha256-vlHUuqAcbcH2RKmHbPiuQzbv1pnzzavXnI62RD0bqCU=",
+        "lastModified": 1785090369,
+        "narHash": "sha256-m0pDuRJG7EDo9ri+4Ksu83VsI+PlxNC9lNBfydejce4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "241313f4e8e508cb9b13278c2b0fa25b9ca27163",
+        "rev": "624af665418d3c65d544145b4d34ad696439570e",
         "type": "github"
       },
       "original": {
@@ -952,11 +952,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783673918,
-        "narHash": "sha256-cFG5vnmjJcZRVCSUaqQLOdwkX6iqF6bY8IvvmBSGSRs=",
+        "lastModified": 1784799776,
+        "narHash": "sha256-6AM0doj8hSNav9qkX4dOHOp1LSjegdQ+VmzDz9MnWAs=",
         "ref": "refs/heads/master",
-        "rev": "4df562dfb2475a9057f0f33a8db75808efad8670",
-        "revCount": 830,
+        "rev": "10b439fc6e3fd65c15fe1c486271b31da05ed023",
+        "revCount": 833,
         "type": "git",
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       },
@@ -1053,7 +1053,7 @@
     "tldraw-offline-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-IItPL/c9s4G18Mal8Aoc8mOG7aQUxLFYPcZMWmy0CEw=",
+        "narHash": "sha256-2AJHT9y+IxhvEnFToOlFfOsQEhJB/ox5lG/DNEGsYN4=",
         "type": "file",
         "url": "https://github.com/tldraw/tldraw-offline/releases/latest/download/tldraw-offline-linux-x86_64.AppImage"
       },
@@ -1156,11 +1156,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1784586513,
-        "narHash": "sha256-ewIv3xH9bQK7uMkU3xK6NWFEW5oIuAtIny8ifJwcY/E=",
+        "lastModified": 1785224333,
+        "narHash": "sha256-8DNJUVM10ktK02V9ZIV064CH+fuPF272VCAZBn6arig=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "0ea161e9ac257510acabfb6e9dbf13630298760d",
+        "rev": "5f1a4be4d280e1ae06d61a75775a234b1714da3f",
         "type": "github"
       },
       "original": {

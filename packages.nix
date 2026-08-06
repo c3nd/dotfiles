@@ -104,6 +104,16 @@ with pkgs;
   zlib
 
   ############################################################################
+  # CAD / aerospace design stack  (FreeCAD, meshing, FEA, 2D drafting, etc.)
+  ############################################################################
+  freecad
+  gmsh
+  calculix-ccx
+  librecad
+  openscad
+  python313Packages.pythonocc-core
+
+  ############################################################################
   # Misc / runtime libraries & tools
   ############################################################################
   upower
