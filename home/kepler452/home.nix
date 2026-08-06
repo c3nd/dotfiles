@@ -47,14 +47,8 @@
 
   services.hyprpolkitagent.enable = false;
 
-  # X11 speech-to-text via xbindkeys + faster-whisper
-  services.xbindkeys.enable = true;
-  xdg.configFile."xbindkeysrc" = {
-    source = ../../config/xbindkeysrc;
-    recursive = false;
-    force = true;
-  };
-
+  # X11 dictation + WindowMaker keybindings
+  # OpenWhispr provides global hotkeys/dictation; WMaker keys mirror Hyprland layout.
   xdg.configFile."wmaker" = {
     source = ../../config/wmaker;
     recursive = true;

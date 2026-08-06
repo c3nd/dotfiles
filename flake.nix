@@ -6,10 +6,11 @@
     home-manager.url = "github:nix-community/home-manager";
     nh.url = "github:nix-community/nh";
     zen-browser.url = "github:zen-browser-desktop/flake";
+    openwhispr.url = "github:OpenWhispr/OpenWhispr";
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nh, zen-browser, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, ... }@inputs:
     {
       nixosConfigurations.cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -21,6 +22,7 @@
           ./modules/nixos/hardware.nix
           ./modules/nixos/desktop.nix
           ./modules/nixos/packages.nix
+          openwhispr.nixosModules.default
         ];
       };
 

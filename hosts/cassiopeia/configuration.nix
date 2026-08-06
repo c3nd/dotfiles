@@ -50,8 +50,9 @@
     };
   };
 
-  # X11 global hotkeys + speech-to-text stack
-  services.xbindkeys.enable = true;
+  # X11 global hotkeys + OpenWhispr speech-to-text
+  # OpenWhispr handles global hotkeys itself; WindowMaker binds below mirror Hyprland.
+  services.openwhispr.enable = true;
 
   # Fingerprint auth: fprintd D-Bus daemon + PAM rules
   services.fprintd.enable = true;
@@ -65,9 +66,6 @@
   environment.systemPackages = with pkgs; [
     nh
     logseq
-    faster-whisper
-    xbindkeys
-    wtype
     fprintd
     alsa-utils
     pavucontrol
@@ -115,8 +113,9 @@
     feh
     tree
     pavucontrol
-    # browser
+    # browsers
     inputs.zen-browser.packages.${pkgs.system}.beta
+    chromium
   ];
 
   users.users.kepler452 = {
