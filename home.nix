@@ -45,7 +45,7 @@ in
     calibre
 
     # Notetaking
-    obsidian
+    logseq
 
     # Prebuilt browsers (from flake inputs)
     inputs.zen-browser.packages.${pkgs.system}.beta
