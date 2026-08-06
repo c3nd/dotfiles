@@ -5,10 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     nh.url = "github:nix-community/nh";
+    zen-browser.url = "github:zen-browser-desktop/flake";
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nh, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, ... }@inputs:
     {
       nixosConfigurations.cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

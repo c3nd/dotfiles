@@ -115,6 +115,8 @@
     feh
     tree
     pavucontrol
+    # browser
+    inputs.zen-browser.packages.${pkgs.system}.beta
   ];
 
   users.users.kepler452 = {
