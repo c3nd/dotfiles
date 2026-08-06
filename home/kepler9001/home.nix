@@ -1,5 +1,3 @@
-# Cassiopeia — split Home Manager config
-# School-focused, WindowMaker desktop, aerospace/scientific stack
 { config, pkgs, inputs, ... }:
 
 {
@@ -23,6 +21,10 @@
     pavucontrol
     cliphist
     logseq
+    dunst
+    conky
+    fuzzel
+    pcmanfm
   ];
 
   programs.git = {
@@ -47,14 +49,26 @@
 
   services.hyprpolkitagent.enable = false;
 
-  # X11 dictation + WindowMaker keybindings
   xdg.configFile."wmaker" = {
     source = ../../config/wmaker;
     recursive = true;
     force = true;
   };
-  xdg.configFile."fish" = {
-    source = ../../config/fish;
+
+  xdg.configFile."fastfetch" = {
+    source = ../../config/fastfetch;
+    recursive = true;
+    force = true;
+  };
+
+  xdg.configFile."dunst" = {
+    source = ../../config/dunst;
+    recursive = true;
+    force = true;
+  };
+
+  xdg.configFile."conky" = {
+    source = ../../conky;
     recursive = true;
     force = true;
   };
