@@ -24,7 +24,7 @@
         pkgs = import nixpkgs { system = "x86_64-linux"; };
         extraSpecialArgs = { inherit inputs nh; };
         modules = [
-          ./home/kepler452/home.nix
+          ./home/kepler9001/home.nix
         ];
       };
     };
