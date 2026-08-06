@@ -81,7 +81,6 @@
     octave
     gnuplot
     maxima
-    freecad
     gmsh
     calculix-ccx
     librecad
