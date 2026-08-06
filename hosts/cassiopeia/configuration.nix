@@ -121,7 +121,6 @@
     isNormalUser = true;
     extraGroups = [ "wheel" "input" "video" ];
     packages = with pkgs; [ tree ];
-    initialPassword = "testing";
   };
 
   security.sudo.extraConfig = ''
