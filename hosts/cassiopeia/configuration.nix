@@ -60,6 +60,18 @@
     ];
   };
 
+  programs.caelestia = {
+    enable = true;
+    systemd = {
+      enable = true;
+      target = "graphical-session.target";
+      environment = [];
+    };
+    cli = {
+      enable = true;
+    };
+  };
+
   services.displayManager.ly.enable = true;
 
   programs.qtengine.enable = true;
