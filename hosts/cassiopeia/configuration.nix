@@ -1,6 +1,6 @@
 # Cassiopeia — NixOS system configuration
 # Host: Cassiopeia (x86_64-linux)
-# Desktop: WindowMaker + slim (X11, NVIDIA Prime sync)
+# Desktop: WindowMaker + ly (X11, NVIDIA Prime sync)
 # Boot: systemd-boot (EFI), shared NVMe with Windows
 { config, lib, pkgs, inputs, ... }:
 
@@ -22,7 +22,6 @@
 
   hardware.nvidia = {
     modesetting.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.open;
     open = true;
     nvidiaSettings = true;
     powerManagement.enable = false;
@@ -40,19 +39,18 @@
     xkbVariant = "";
   };
 
-  services.displayManager.slim.enable = true;
+  services.displayManager.ly.enable = true;
 
-  programs.windowmaker = {
+  services.xserver.windowManager.windowmaker = {
     enable = true;
-    settings = {
-      WMUserIcons = false;
-      WMDockApps = false;
-    };
   };
 
   # X11 global hotkeys + OpenWhispr speech-to-text
   # OpenWhispr handles global hotkeys itself; WindowMaker binds below mirror Hyprland.
-  services.openwhispr.enable = true;
+  programs.openwhispr = {
+    enable = true;
+    users = [ "kepler452" ];
+  };
 
   # Fingerprint auth: fprintd D-Bus daemon + PAM rules
   services.fprintd.enable = true;
@@ -60,8 +58,7 @@
   security.pam.services.sudo.fprintAuth = true;
   security.pam.services.su.fprintAuth = true;
   security.pam.services.gdm.fprintAuth = true;
-  security.pam.services.lightdm.fprintAuth = true;
-  security.pam.services.slim.fprintAuth = true;
+  security.pam.services.ly.fprintAuth = true;
 
   environment.systemPackages = with pkgs; [
     nh
@@ -89,7 +86,6 @@
     calculix-ccx
     librecad
     openscad
-    openvsp
     libreoffice-qt6-fresh
     hunspell
     hunspellDicts.uk_UA
@@ -115,7 +111,9 @@
     pavucontrol
     # browsers
     inputs.zen-browser.packages.${pkgs.system}.beta
-    chromium
+    brave
+    # lightweight tools
+    pcmanfm
   ];
 
   users.users.kepler452 = {
@@ -140,6 +138,10 @@
     "cuda-maintainers.cachix.org-1:0dq3bujKpuEPGUMXPcWe6Xsg52TCkEHwhT4SFgdHVR4="
   ];
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-39.8.10"
+    "xpdf-4.06"
+  ];
 
   system.stateVersion = "25.11";
 }
