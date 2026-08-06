@@ -9,7 +9,7 @@
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "cassiopeia";
+  networking.hostName = "Cassiopeia";
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

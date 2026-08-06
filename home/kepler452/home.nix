@@ -8,7 +8,7 @@
   home.stateVersion = "25.11";
 
   home.sessionVariables = {
-    NH_OS_FLAKE = "~/dotfiles#cassiopeia";
+    NH_OS_FLAKE = "~/dotfiles#Cassiopeia";
     NH_HOME_FLAKE = "~/dotfiles#kepler452";
     NH_ELEVATION_STRATEGY = "auto";
     EDITOR = "vim";

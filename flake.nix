@@ -12,7 +12,7 @@
   outputs =
     { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, ... }@inputs:
     {
-      nixosConfigurations.cassiopeia = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.Cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
