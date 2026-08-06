@@ -1,6 +1,6 @@
 # Cassiopeia WindowMaker keybindings
 # Mirrors Hyprland Super-based layout using Mod3.
-# X11 speech-to-text uses xbindkeys + faster-whisper + wtype.
+# Speech-to-text: OpenWhispr (global hotkeys handled by OpenWhispr daemon).
 
 {
   "Mod3+Return" = "exec xterm";
@@ -9,9 +9,6 @@
   "Mod3+e" = "exec thunar";
   "Mod3+d" = "exec fuzzel";
   "Mod3+f" = "fullscreen";
-  "Mod3+Shift+Space" = "exec faster-whisper-toggle";
-  "Mod3+Shift+p" = "exec faster-whisper-postprocess";
-  "Mod3+Shift+Escape" = "exec faster-whisper-cancel";
   "Mod3+Left" = "left";
   "Mod3+Right" = "right";
   "Mod3+Up" = "up";
