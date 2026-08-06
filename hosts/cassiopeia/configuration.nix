@@ -26,12 +26,8 @@
     open = true;
     nvidiaSettings = true;
     powerManagement.enable = false;
-    prime.sync = {
-      enable = true;
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
-    };
   };
+
   hardware.graphics.enable = true;
   hardware.bluetooth.enable = true;
 
@@ -55,18 +51,70 @@
   };
 
   # X11 global hotkeys + speech-to-text stack
-  # Handy is Wayland-only; on X11/WindowMaker we use xbindkeys + faster-whisper
-  # + wtype to inject text. SUPER/Mod3 bindings mirror Hyprland's layout.
   services.xbindkeys.enable = true;
+
+  # Fingerprint auth: fprintd D-Bus daemon + PAM rules
+  services.fprintd.enable = true;
+  security.pam.services.login.fprintAuth = true;
+  security.pam.services.sudo.fprintAuth = true;
+  security.pam.services.su.fprintAuth = true;
+  security.pam.services.gdm.fprintAuth = true;
+  security.pam.services.lightdm.fprintAuth = true;
+  security.pam.services.slim.fprintAuth = true;
 
   environment.systemPackages = with pkgs; [
     nh
+    logseq
     faster-whisper
     xbindkeys
     wtype
+    fprintd
     alsa-utils
     pavucontrol
     ffmpeg
+    # aerospace / school stack
+    texliveFull
+    python314
+    uv
+    python313Packages.numpy
+    python313Packages.scipy
+    python313Packages.pandas
+    python313Packages.matplotlib
+    python313Packages.sympy
+    python313Packages.astropy
+    python313Packages.pythonocc-core
+    octave
+    gnuplot
+    maxima
+    freecad
+    gmsh
+    calculix-ccx
+    librecad
+    openscad
+    openvsp
+    libreoffice-qt6-fresh
+    hunspell
+    hunspellDicts.uk_UA
+    krita
+    xpdf
+    fastfetch
+    vim
+    git
+    gcc
+    gnumake
+    pkg-config
+    nil
+    jq
+    lshw
+    nnn
+    btop
+    eza
+    starship
+    gnome-keyring
+    cliphist
+    feh
+    tree
+    pavucontrol
   ];
 
   users.users.kepler452 = {

@@ -22,6 +22,7 @@
     feh xpdf
     pavucontrol
     cliphist
+    logseq
   ];
 
   programs.git = {
@@ -47,7 +48,6 @@
   services.hyprpolkitagent.enable = false;
 
   # X11 speech-to-text via xbindkeys + faster-whisper
-  # Handy is Wayland-only; replaced on Cassiopeia with X11-native stack.
   services.xbindkeys.enable = true;
   xdg.configFile."xbindkeysrc" = {
     source = ../../config/xbindkeysrc;
