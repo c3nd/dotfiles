@@ -1,6 +1,6 @@
 # Cassiopeia — NixOS system configuration
 # Host: HP ZBook Firefly 15.6 G8 (i7-1185G7, 32GB, T500)
-# Desktop: WindowMaker + ly (X11, NVIDIA Prime sync)
+# Desktop: Hyprland + caelestia-shell (configured in home.nix)
 # Boot: systemd-boot (EFI), shared NVMe with Windows
 { config, lib, pkgs, inputs, ... }:
 
@@ -10,12 +10,12 @@
     inputs.openwhispr.nixosModules.default
   ];
 
-  networking.hostName = "Cassiopeia";
-
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_zen;
   boot.kernelModules = [ "kvm-intel" ];
 
+  networking.hostName = "Cassiopeia";
   networking.networkmanager.enable = true;
   networking.firewall.enable = false;
   time.timeZone = "America/Phoenix";
@@ -24,13 +24,13 @@
     modesetting.enable = true;
     open = true;
     nvidiaSettings = true;
+    powerManagement.enable = true;
+    powerManagement.finegrained = false;
     prime = {
       sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
-    powerManagement.enable = true;
-    powerManagement.finegrained = false;
   };
 
   hardware.graphics.enable = true;
@@ -45,24 +45,43 @@
     xkbVariant = "";
   };
 
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+  };
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = [
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ];
+  };
+
   services.displayManager.ly.enable = true;
 
-  services.xserver.windowManager.windowmaker = {
+  programs.qtengine.enable = true;
+
+  services.pipewire = {
     enable = true;
+    pulse.enable = true;
   };
 
-  # X11 global hotkeys + OpenWhispr speech-to-text
-  programs.openwhispr = {
-    enable = true;
-    users = [ "kepler9001" ];
-  };
+  services.upower.enable = true;
+  services.printing.enable = true;
+  services.libinput.enable = true;
 
-  # Fingerprint auth: fprintd D-Bus daemon + PAM rules
   services.fprintd.enable = true;
   security.pam.services.login.fprintAuth = true;
   security.pam.services.sudo.fprintAuth = true;
   security.pam.services.su.fprintAuth = true;
   security.pam.services.ly.fprintAuth = true;
+
+  programs.openwhispr = {
+    enable = true;
+    users = [ "kepler9001" ];
+  };
 
   environment.systemPackages = with pkgs; [
     nh
@@ -115,6 +134,8 @@
     brave
     # lightweight tools
     pcmanfm
+    # fonts
+    nerd-fonts.jetbrains-mono
   ];
 
   users.users.kepler9001 = {

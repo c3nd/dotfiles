@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
+    hyprland.url = "github:hyprwm/Hyprland";
     home-manager.url = "github:nix-community/home-manager";
     nh.url = "github:nix-community/nh";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";

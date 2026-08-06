@@ -21,8 +21,6 @@
     pavucontrol
     cliphist
     logseq
-    dunst
-    conky
     fuzzel
     pcmanfm
   ];
@@ -47,28 +45,14 @@
   gtk.font.name = "TX-02";
   fonts.fontconfig.enable = true;
 
-  services.hyprpolkitagent.enable = false;
-
-  xdg.configFile."wmaker" = {
-    source = ../../config/wmaker;
+  xdg.configFile."caelestia" = {
+    source = ../../config/caelestia;
     recursive = true;
     force = true;
   };
 
-  xdg.configFile."fastfetch" = {
-    source = ../../config/fastfetch;
-    recursive = true;
-    force = true;
-  };
-
-  xdg.configFile."dunst" = {
-    source = ../../config/dunst;
-    recursive = true;
-    force = true;
-  };
-
-  xdg.configFile."conky" = {
-    source = ../../conky;
+  xdg.configFile."fish" = {
+    source = ../../config/fish;
     recursive = true;
     force = true;
   };
