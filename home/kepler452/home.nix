@@ -3,13 +3,13 @@
 { config, pkgs, inputs, ... }:
 
 {
-  home.username = "kepler452";
-  home.homeDirectory = "/home/kepler452";
+  home.username = "kepler9001";
+  home.homeDirectory = "/home/kepler9001";
   home.stateVersion = "25.11";
 
   home.sessionVariables = {
-    NH_OS_FLAKE = "~/dotfiles#Cassiopeia";
-    NH_HOME_FLAKE = "~/dotfiles#kepler452";
+    NH_OS_FLAKE = "~/.config/cassiopeia#Cassiopeia";
+    NH_HOME_FLAKE = "~/.config/cassiopeia#kepler9001";
     NH_ELEVATION_STRATEGY = "auto";
     EDITOR = "vim";
     VISUAL = "vim";
@@ -48,7 +48,6 @@
   services.hyprpolkitagent.enable = false;
 
   # X11 dictation + WindowMaker keybindings
-  # OpenWhispr provides global hotkeys/dictation; WMaker keys mirror Hyprland layout.
   xdg.configFile."wmaker" = {
     source = ../../config/wmaker;
     recursive = true;

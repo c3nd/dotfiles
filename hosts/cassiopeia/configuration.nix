@@ -1,5 +1,5 @@
 # Cassiopeia — NixOS system configuration
-# Host: Cassiopeia (x86_64-linux)
+# Host: HP ZBook Firefly 15.6 G8 (i7-1185G7, 32GB, T500)
 # Desktop: WindowMaker + ly (X11, NVIDIA Prime sync)
 # Boot: systemd-boot (EFI), shared NVMe with Windows
 { config, lib, pkgs, inputs, ... }:
@@ -24,7 +24,13 @@
     modesetting.enable = true;
     open = true;
     nvidiaSettings = true;
-    powerManagement.enable = false;
+    prime = {
+      sync.enable = true;
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
+    powerManagement.enable = true;
+    powerManagement.finegrained = false;
   };
 
   hardware.graphics.enable = true;
@@ -46,10 +52,9 @@
   };
 
   # X11 global hotkeys + OpenWhispr speech-to-text
-  # OpenWhispr handles global hotkeys itself; WindowMaker binds below mirror Hyprland.
   programs.openwhispr = {
     enable = true;
-    users = [ "kepler452" ];
+    users = [ "kepler9001" ];
   };
 
   # Fingerprint auth: fprintd D-Bus daemon + PAM rules
@@ -57,7 +62,6 @@
   security.pam.services.login.fprintAuth = true;
   security.pam.services.sudo.fprintAuth = true;
   security.pam.services.su.fprintAuth = true;
-  security.pam.services.gdm.fprintAuth = true;
   security.pam.services.ly.fprintAuth = true;
 
   environment.systemPackages = with pkgs; [
@@ -113,14 +117,15 @@
     pcmanfm
   ];
 
-  users.users.kepler452 = {
+  users.users.kepler9001 = {
     isNormalUser = true;
     extraGroups = [ "wheel" "input" "video" ];
     packages = with pkgs; [ tree ];
+    initialPassword = "testing";
   };
 
   security.sudo.extraConfig = ''
-    kepler452 ALL=(root) NOPASSWD: /run/current-system/sw/bin/nixos-rebuild, /run/current-system/sw/bin/systemctl
+    kepler9001 ALL=(root) NOPASSWD: /run/current-system/sw/bin/nixos-rebuild, /run/current-system/sw/bin/systemctl
   '';
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -134,7 +139,15 @@
     "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Z9Iz52rXz24doJeTsuN8bjwc="
     "cuda-maintainers.cachix.org-1:0dq3bujKpuEPGUMXPcWe6Xsg52TCkEHwhT4SFgdHVR4="
   ];
-  nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    (builtins.elem (lib.getName pkg) [
+      "nvidia-x11"
+      "nvidia-settings"
+      "brave"
+      "nvidia-kernel-modules"
+    ]);
+
   nixpkgs.config.permittedInsecurePackages = [
     "electron-39.8.10"
     "xpdf-4.06"
