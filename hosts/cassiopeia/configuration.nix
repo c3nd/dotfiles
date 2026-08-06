@@ -68,7 +68,6 @@
     pavucontrol
     ffmpeg
     # aerospace / school stack
-    texliveFull
     python314
     uv
     python313Packages.numpy
@@ -85,7 +84,6 @@
     calculix-ccx
     librecad
     openscad
-    libreoffice-qt6-fresh
     hunspell
     hunspellDicts.uk_UA
     krita
