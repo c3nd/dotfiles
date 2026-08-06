@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     nh.url = "github:nix-community/nh";
-    zen-browser.url = "github:zen-browser-desktop/flake";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
     openwhispr.url = "github:OpenWhispr/OpenWhispr";
   };
 
