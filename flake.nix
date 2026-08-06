@@ -8,6 +8,10 @@
     nh.url = "github:nix-community/nh";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     openwhispr.url = "github:OpenWhispr/OpenWhispr";
+    qtengine = {
+      url = "github:kossLAN/qtengine";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

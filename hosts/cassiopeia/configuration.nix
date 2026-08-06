@@ -7,6 +7,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./modules/qtengine.nix
     inputs.openwhispr.nixosModules.default
   ];
 
