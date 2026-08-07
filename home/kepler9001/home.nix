@@ -107,11 +107,10 @@
     force = true;
   };
 
-  xdg.configFile."hypr" = {
-    source = ../../config/hypr;
-    recursive = true;
-    force = true;
-  };
+  xdg.configFile."hypr/hyprland.conf".source = ../../config/hypr/hyprland.conf;
+  xdg.configFile."hypr/hyprland.lua".source = ../../config/hypr/hyprland.lua;
+  xdg.configFile."hypr/custom/execs.conf".source = ../../config/hypr/custom/execs.conf;
+  xdg.configFile."hypr/custom/keybinds.conf".source = ../../config/hypr/custom/keybinds.conf;
 
   xdg.configFile."starship" = {
     source = ../../config/starship;
@@ -121,9 +120,9 @@
 
   programs.home-manager.enable = true;
 
-  # Make Hyprland/DMS configs writable at runtime
+  # Ensure ~/.config/hypr is a real writable directory so DMS can write dms/*.lua
   home.activation.deployHyprConfig = lib.mkAfter ''
     mkdir -p "$HOME/.config/hypr"
-    chmod -R u+w "$HOME/.config/hypr" 2>/dev/null || true
+    chmod u+w "$HOME/.config/hypr" 2>/dev/null || true
   '';
 }
