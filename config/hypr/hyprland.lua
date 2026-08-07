@@ -54,7 +54,7 @@ hl.config({
     shadow = {
       enabled = true,
       range = 30,
-      render_power = 5,
+      render_power = 4,
       offset = {0, 5},
       color = "rgba(00000070)"
     }
@@ -121,27 +121,27 @@ hl.bind("SUPER + X", hl.dsp.exec_cmd("kitty --class scratchpad"))
 hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("pavucontrol || paman"))
 hl.bind("SUPER + B", hl.dsp.exec_cmd("brave"))
 
-hl.bind("SUPER + Q", "closewindow")
-hl.bind("SUPER + D", "fullscreen, 1")
-hl.bind("SUPER + F", "fullscreen, 0")
-hl.bind("SUPER + ALT + space", "togglefloating")
+hl.bind("SUPER + Q", hl.dsp.exec_cmd("hyprctl dispatch closewindow"))
+hl.bind("SUPER + D", hl.dsp.exec_cmd("hyprctl dispatch fullscreen 1"))
+hl.bind("SUPER + F", hl.dsp.exec_cmd("hyprctl dispatch fullscreen 0"))
+hl.bind("SUPER + ALT + space", hl.dsp.exec_cmd("hyprctl dispatch togglefloating"))
 
-hl.bind("SUPER + Left", "movefocus, l")
-hl.bind("SUPER + Right", "movefocus, r")
-hl.bind("SUPER + Up", "movefocus, u")
-hl.bind("SUPER + Down", "movefocus, d")
+hl.bind("SUPER + Left", hl.dsp.exec_cmd("hyprctl dispatch movefocus l"))
+hl.bind("SUPER + Right", hl.dsp.exec_cmd("hyprctl dispatch movefocus r"))
+hl.bind("SUPER + Up", hl.dsp.exec_cmd("hyprctl dispatch movefocus u"))
+hl.bind("SUPER + Down", hl.dsp.exec_cmd("hyprctl dispatch movefocus d"))
 
-hl.bind("SUPER + SHIFT + Left", "movewindow, l")
-hl.bind("SUPER + SHIFT + Right", "movewindow, r")
-hl.bind("SUPER + SHIFT + Up", "movewindow, u")
-hl.bind("SUPER + SHIFT + Down", "movewindow, d")
+hl.bind("SUPER + SHIFT + Left", hl.dsp.exec_cmd("hyprctl dispatch movewindow l"))
+hl.bind("SUPER + SHIFT + Right", hl.dsp.exec_cmd("hyprctl dispatch movewindow r"))
+hl.bind("SUPER + SHIFT + Up", hl.dsp.exec_cmd("hyprctl dispatch movewindow u"))
+hl.bind("SUPER + SHIFT + Down", hl.dsp.exec_cmd("hyprctl dispatch movewindow d"))
 
 for i = 1, 10 do
   local ws = (i == 10) and 0 or i
-  hl.bind("SUPER + " .. ws, "workspace, " .. ws)
-  hl.bind("SUPER + SHIFT + " .. ws, "movetoworkspace, " .. ws)
-  hl.bind("SUPER + ALT + " .. ws, "movetoworkspace, silent, " .. ws .. "; workspace, " .. ws)
+  hl.bind("SUPER + " .. ws, hl.dsp.exec_cmd("hyprctl dispatch workspace " .. ws))
+  hl.bind("SUPER + SHIFT + " .. ws, hl.dsp.exec_cmd("hyprctl dispatch movetoworkspace " .. ws))
+  hl.bind("SUPER + ALT + " .. ws, hl.dsp.exec_cmd("hyprctl dispatch movetoworkspace silent " .. ws .. "; hyprctl dispatch workspace " .. ws))
 end
 
-hl.bind("SUPER + SHIFT + Q", "exit")
-hl.bind("SUPER + SHIFT + R", "reload")
+hl.bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd("hyprctl dispatch exit"))
+hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("hyprctl dispatch reload"))
