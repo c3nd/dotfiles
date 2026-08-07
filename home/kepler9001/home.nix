@@ -79,6 +79,12 @@
     force = true;
   };
 
+  xdg.configFile."hypr" = {
+    source = ../../config/hypr;
+    recursive = true;
+    force = true;
+  };
+
   xdg.configFile."starship" = {
     source = ../../config/starship;
     recursive = true;
