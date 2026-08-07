@@ -33,6 +33,26 @@
         "type": "github"
       }
     },
+    "beer": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785580637,
+        "narHash": "sha256-j1IM/Vyj3WJ+O++mPuJaca0GGCWJex/3dpaKOa7DIJ4=",
+        "owner": "Michael-C-Buckley",
+        "repo": "beer",
+        "rev": "2d719e91473cbca2309b88d701cd05295371eb9c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Michael-C-Buckley",
+        "repo": "beer",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1783203018,
@@ -681,6 +701,7 @@
     },
     "root": {
       "inputs": {
+        "beer": "beer",
         "dank-material-shell": "dank-material-shell",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
