@@ -17,7 +17,6 @@
   home.packages = with pkgs; [
     # media
     kopuz
-    beer
 
     # aerospace/school stack
     freecad
