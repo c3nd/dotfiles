@@ -37,7 +37,7 @@
             "xpdf-4.06"
           ];
         };
-        extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.${pkgs.system}; };
+        extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.x86_64-linux; };
         modules = [
           ./home/kepler9001/home.nix
           inputs.dank-material-shell.homeModules.dank-material-shell
