@@ -28,12 +28,6 @@ if home ~= "" then
 
   -- === Custom configs ===
   local custom_dir = home .. "/.config/hypr/custom"
-  if is_file_exists(custom_dir .. "/execs.lua") then
-    require("custom.execs")
-  end
-  if is_file_exists(custom_dir .. "/keybinds.lua") then
-    require("custom.keybinds")
-  end
   if is_file_exists(custom_dir .. "/variables.lua") then
     require("custom.variables")
   end
