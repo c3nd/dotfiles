@@ -16,6 +16,7 @@
       url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    kopuz.url = "github:temidaradev/kopuz";
   };
 
   outputs =
@@ -38,7 +39,7 @@
           ];
           config.allowUnfree = true;
         };
-        extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.x86_64-linux; };
+        extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.x86_64-linux; kopuzPkg = inputs.kopuz.packages.x86_64-linux.default; };
         modules = [
           ./home/kepler9001/home.nix
           inputs.dank-material-shell.homeModules.dank-material-shell

@@ -15,6 +15,9 @@
   };
 
   home.packages = with pkgs; [
+    # media
+    kopuzPkg
+
     # aerospace/school stack
     freecad
     gmsh
@@ -32,9 +35,18 @@
     python3Packages.tkinter
     texliveFull
 
+    # terminal / system
+    kitty
+    xterm
+    starship
+    fish
+    brave
+    lapce
+    fprintd
+    qt6.qtwayland
+
     zip xz unzip p7zip
     fastfetch
-    starship
     feh xpdf
     pavucontrol
     cliphist
