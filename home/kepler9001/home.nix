@@ -29,7 +29,7 @@
     python3Packages.scipy
     python3Packages.matplotlib
     python3Packages.pandas
-    tkinter
+    python3Packages.tkinter
     texliveFull
 
     zip xz unzip p7zip
