@@ -91,22 +91,10 @@ hl.on("hyprland.start", function()
 end)
 
 -- === DMS keybinds ===
-hl.bind("SUPER + space", hl.dsp.exec_cmd("dms ipc call spotlight toggle"))
-hl.bind("SUPER + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
-hl.bind("SUPER + M", hl.dsp.exec_cmd("dms ipc call processlist focusOrToggle"))
-hl.bind("SUPER + comma", hl.dsp.exec_cmd("dms ipc call settings focusOrToggle"))
-hl.bind("SUPER + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"))
-hl.bind("SUPER + Y", hl.dsp.exec_cmd("dms ipc call dankdash wallpaper"))
-hl.bind("SUPER + TAB", hl.dsp.exec_cmd("dms ipc call hypr toggleOverview"))
-
-hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd("dms ipc call lock lock"))
-
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dms ipc call audio increment 2", { locked = true, repeating = true }))
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dms ipc call audio decrement 2", { locked = true, repeating = true }))
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("dms ipc call audio mute", { locked = true }))
-
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("dms ipc call brightness increment 10", { locked = true, repeating = true }))
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("dms ipc call brightness decrement 10", { locked = true, repeating = true }))
+-- All user-facing keybinds are managed by DMS Settings UI.
+-- The include loop below loads DMS-generated binds from:
+--   ~/.config/hypr/dms/{colors,layout,outputs,keybinds,bindings}.lua
+-- Do NOT add hardcoded hl.bind(...) entries here; they conflict with DMS Settings.
 
 -- === Custom keybinds ===
 -- Native Hyprland action binds are in custom/keybinds.conf (sourced below)
