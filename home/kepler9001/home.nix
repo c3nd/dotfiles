@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   home.username = "kepler9001";
@@ -104,4 +104,10 @@
   };
 
   programs.home-manager.enable = true;
+
+  # Make Hyprland/DMS configs writable at runtime
+  home.activation.deployHyprConfig = lib.mkAfter ''
+    mkdir -p "$HOME/.config/hypr"
+    chmod -R u+w "$HOME/.config/hypr" 2>/dev/null || true
+  '';
 }
