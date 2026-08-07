@@ -134,6 +134,7 @@
     xterm
     kitty
     pcmanfm
+    inputs.caelestia-shell.packages.${pkgs.system}.with-cli
     # fonts
     nerd-fonts.jetbrains-mono
   ];
