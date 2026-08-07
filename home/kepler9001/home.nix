@@ -17,6 +17,7 @@
   home.packages = with pkgs; [
     # media
     kopuz
+    beer
 
     # aerospace/school stack
     freecad
@@ -119,7 +120,7 @@
   # so DMS Settings can edit hyprland.lua and write dms/*.lua
   home.activation.deployHyprConfig = lib.mkAfter ''
     set -euo pipefail
-    SRC="/home/kepler452/projects/cassiopeia-dendritic/config/hypr"
+    SRC="$HOME/.config/cassiopeia/home/kepler9001/config/hypr"
     DEST="$HOME/.config/hypr"
     mkdir -p "$DEST" "$DEST/custom"
     cp -f "$SRC/hyprland.conf" "$DEST/hyprland.conf"
