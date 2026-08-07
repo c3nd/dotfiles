@@ -166,6 +166,7 @@
       "nvidia-settings"
       "brave"
       "nvidia-kernel-modules"
+      "tx02-fonts"
     ]);
 
   nixpkgs.config.permittedInsecurePackages = [

@@ -4,7 +4,10 @@ stdenv.mkDerivation {
   pname = "tx02-fonts";
   version = "1.0.0";
 
-  src = ./themes/space/fonts/tx02;
+  src = builtins.path {
+    name = "tx02-fonts";
+    path = ../../themes/space/fonts/tx02;
+  };
 
   installPhase = ''
     runHook preInstall

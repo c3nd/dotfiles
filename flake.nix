@@ -36,6 +36,7 @@
             "electron-39.8.10"
             "xpdf-4.06"
           ];
+          config.allowUnfree = true;
         };
         extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.x86_64-linux; };
         modules = [

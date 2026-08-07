@@ -15,9 +15,6 @@
   };
 
   home.packages = with pkgs; [
-    # custom fonts
-    (callPackage ../../modules/tx02-fonts.nix {})
-
     # aerospace/school stack
     freecad
     gmsh
@@ -45,6 +42,12 @@
     fuzzel
     pcmanfm
   ];
+
+  # Install TX-02 fonts locally so every app sees them
+  home.file.".local/share/fonts/tx02" = {
+    source = ../../themes/space/fonts/tx02;
+    recursive = true;
+  };
 
   programs.git = {
     enable = true;
@@ -78,6 +81,7 @@
   fonts.fontconfig.enable = true;
   fonts.fontconfig.defaultFonts = {
     sansSerif = [ "TX-02" ];
+    serif = [ "TX-02" ];
     monospace = [ "TX-02" ];
   };
 
