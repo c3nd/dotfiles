@@ -16,7 +16,7 @@
 
   home.packages = with pkgs; [
     # media
-    kopuzPkg
+    kopuz
 
     # aerospace/school stack
     freecad
