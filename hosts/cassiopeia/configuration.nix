@@ -71,6 +71,7 @@
   services.upower.enable = true;
   services.printing.enable = true;
 
+  services.power-profiles-daemon.enable = true;
   services.syncthing.enable = true;
   services.libinput.enable = true;
 
@@ -153,6 +154,11 @@
   '';
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Ensure common music sync dir exists with correct ownership for Syncthing
+  systemd.tmpfiles.rules = [
+    "d /home/kepler9001/Music 0755 kepler9001 users -"
+  ];
   nix.settings.substituters = [
     "https://cache.nixos.org"
     "https://nix-community.cachix.org"
