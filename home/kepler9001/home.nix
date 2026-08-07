@@ -41,7 +41,6 @@
     starship
     fish
     brave
-    lapce
     zed-editor
     fprintd
     qt6.qtwayland
