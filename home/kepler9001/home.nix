@@ -77,8 +77,6 @@
     '';
   };
 
-  programs.lapce.enable = true;
-
   programs.dank-material-shell = {
     enable = true;
     systemd = {
