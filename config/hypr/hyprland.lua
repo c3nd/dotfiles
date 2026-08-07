@@ -41,7 +41,7 @@ hl.config({
     gaps_out = 8,
     border_size = 1,
     col = {
-      active_border = "rgba(FF0000ff) rgba(00FF00ff) rgba(0000FFff)",
+      active_border = "rgba(ff0000ff)",
       inactive_border = "rgba(111111ff)"
     },
     resize_on_border = true,
@@ -50,10 +50,15 @@ hl.config({
   },
   decoration = {
     rounding = 8,
-    drop_shadow = true,
-    shadow_range = 4,
-    shadow_render_power = 3,
-    col_shadow = "0x000000"
+    active_opacity = 1.0,
+    inactive_opacity = 0.9,
+    shadow = {
+      enabled = true,
+      range = 30,
+      render_power = 5,
+      offset = {0, 5},
+      color = "rgba(00000070)"
+    }
   },
   animations = {
     enabled = true,
