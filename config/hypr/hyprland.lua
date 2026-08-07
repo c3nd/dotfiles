@@ -3,7 +3,6 @@
 -- https://danklinux.com/docs/dankmaterialshell/compositors#hyprland-configuration
 
 local home = os.getenv("HOME") or ""
-local mod = SUPER
 
 -- === DMS integration ===
 if home ~= "" then
@@ -66,7 +65,6 @@ hl.config({
     animation = { windows = { 1, 6, smoothOut, "slide" }, border = { 1, 10, "default" }, fade = { 1, 10, "default" } }
   },
   dwindle = {
-    pseudotile = true,
     preserve_split = true
   },
   master = {
@@ -97,15 +95,15 @@ hl.on("hyprland.start", function()
 end)
 
 -- === DMS keybinds ===
-hl.bind(mod .. " + space", hl.dsp.exec_cmd("dms ipc call spotlight toggle"))
-hl.bind(mod .. " + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
-hl.bind(mod .. " + M", hl.dsp.exec_cmd("dms ipc call processlist focusOrToggle"))
-hl.bind(mod .. " + comma", hl.dsp.exec_cmd("dms ipc call settings focusOrToggle"))
-hl.bind(mod .. " + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"))
-hl.bind(mod .. " + Y", hl.dsp.exec_cmd("dms ipc call dankdash wallpaper"))
-hl.bind(mod .. " + TAB", hl.dsp.exec_cmd("dms ipc call hypr toggleOverview"))
+hl.bind("SUPER + space", hl.dsp.exec_cmd("dms ipc call spotlight toggle"))
+hl.bind("SUPER + V", hl.dsp.exec_cmd("dms ipc call clipboard toggle"))
+hl.bind("SUPER + M", hl.dsp.exec_cmd("dms ipc call processlist focusOrToggle"))
+hl.bind("SUPER + comma", hl.dsp.exec_cmd("dms ipc call settings focusOrToggle"))
+hl.bind("SUPER + N", hl.dsp.exec_cmd("dms ipc call notifications toggle"))
+hl.bind("SUPER + Y", hl.dsp.exec_cmd("dms ipc call dankdash wallpaper"))
+hl.bind("SUPER + TAB", hl.dsp.exec_cmd("dms ipc call hypr toggleOverview"))
 
-hl.bind(mod .. " + ALT + L", hl.dsp.exec_cmd("dms ipc call lock lock"))
+hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd("dms ipc call lock lock"))
 
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dms ipc call audio increment 2", { locked = true, repeating = true }))
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dms ipc call audio decrement 2", { locked = true, repeating = true }))
@@ -115,35 +113,35 @@ hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("dms ipc call brightness incremen
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("dms ipc call brightness decrement 10", { locked = true, repeating = true }))
 
 -- === Custom keybinds ===
-hl.bind(mod .. " + Return", hl.dsp.exec_cmd("kitty"))
-hl.bind(mod .. " + E", hl.dsp.exec_cmd("kitty --class file-manager -e ranger || thunar || pcmanfm"))
-hl.bind(mod .. " + W", hl.dsp.exec_cmd("brave || zen-browser || firefox"))
-hl.bind(mod .. " + C", hl.dsp.exec_cmd("lapce"))
-hl.bind(mod .. " + X", hl.dsp.exec_cmd("kitty --class scratchpad"))
-hl.bind(mod .. " + SHIFT + V", hl.dsp.exec_cmd("pavucontrol || paman"))
-hl.bind(mod .. " + B", hl.dsp.exec_cmd("brave"))
+hl.bind("SUPER + Return", hl.dsp.exec_cmd("kitty"))
+hl.bind("SUPER + E", hl.dsp.exec_cmd("thunar"))
+hl.bind("SUPER + W", hl.dsp.exec_cmd("brave || zen-browser || firefox"))
+hl.bind("SUPER + C", hl.dsp.exec_cmd("lapce"))
+hl.bind("SUPER + X", hl.dsp.exec_cmd("kitty --class scratchpad"))
+hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("pavucontrol || paman"))
+hl.bind("SUPER + B", hl.dsp.exec_cmd("brave"))
 
-hl.bind(mod .. " + Q", "closewindow")
-hl.bind(mod .. " + D", "fullscreen, 1")
-hl.bind(mod .. " + F", "fullscreen, 0")
-hl.bind(mod .. " + ALT + space", "togglefloating")
+hl.bind("SUPER + Q", "closewindow")
+hl.bind("SUPER + D", "fullscreen, 1")
+hl.bind("SUPER + F", "fullscreen, 0")
+hl.bind("SUPER + ALT + space", "togglefloating")
 
-hl.bind(mod .. " + Left", "movefocus, l")
-hl.bind(mod .. " + Right", "movefocus, r")
-hl.bind(mod .. " + Up", "movefocus, u")
-hl.bind(mod .. " + Down", "movefocus, d")
+hl.bind("SUPER + Left", "movefocus, l")
+hl.bind("SUPER + Right", "movefocus, r")
+hl.bind("SUPER + Up", "movefocus, u")
+hl.bind("SUPER + Down", "movefocus, d")
 
-hl.bind(mod .. " + SHIFT + Left", "movewindow, l")
-hl.bind(mod .. " + SHIFT + Right", "movewindow, r")
-hl.bind(mod .. " + SHIFT + Up", "movewindow, u")
-hl.bind(mod .. " + SHIFT + Down", "movewindow, d")
+hl.bind("SUPER + SHIFT + Left", "movewindow, l")
+hl.bind("SUPER + SHIFT + Right", "movewindow, r")
+hl.bind("SUPER + SHIFT + Up", "movewindow, u")
+hl.bind("SUPER + SHIFT + Down", "movewindow, d")
 
 for i = 1, 10 do
   local ws = (i == 10) and 0 or i
-  hl.bind(mod .. " + " .. ws, "workspace, " .. ws)
-  hl.bind(mod .. " + SHIFT + " .. ws, "movetoworkspace, " .. ws)
-  hl.bind(mod .. " + ALT + " .. ws, "movetoworkspace, silent, " .. ws .. "; workspace, " .. ws)
+  hl.bind("SUPER + " .. ws, "workspace, " .. ws)
+  hl.bind("SUPER + SHIFT + " .. ws, "movetoworkspace, " .. ws)
+  hl.bind("SUPER + ALT + " .. ws, "movetoworkspace, silent, " .. ws .. "; workspace, " .. ws)
 end
 
-hl.bind(mod .. " + SHIFT + Q", "exit")
-hl.bind(mod .. " + SHIFT + R", "reload")
+hl.bind("SUPER + SHIFT + Q", "exit")
+hl.bind("SUPER + SHIFT + R", "reload")

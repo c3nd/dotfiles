@@ -52,7 +52,7 @@
     cliphist
     logseq
     fuzzel
-    pcmanfm
+    thunar
   ];
 
   # Install TX-02 fonts locally so every app sees them
