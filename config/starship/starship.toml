@@ -1,0 +1,31 @@
+# Cassiopeia starship config
+"$schema" = "https://starship.rs/config-schema.json"
+
+format = """
+[┌───────────────────>](bold blue)$directory[](bg:blue fg:white)$git_branch$git_status
+[└─](bold blue)[$character](bold green) """
+
+[directory]
+style = "bold cyan"
+truncation_length = 3
+truncate_with_replacement = "…/"
+repo_root_style = "bold blue"
+
+[character]
+success_symbol = "[λ](bold green)"
+error_symbol = "[λ](bold red)"
+
+[git_branch]
+format = "[$branch]($style)"
+style = "bold purple"
+
+[git_status]
+format = '([($all_status$ahead_behind)]($style) )'
+style = "bold red"
+
+[fill]
+symbol = " "
+
+[cmd_duration]
+min_time = 2_000
+format = "[$duration]($style)"

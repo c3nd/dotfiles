@@ -17,6 +17,7 @@
   home.packages = with pkgs; [
     zip xz unzip p7zip
     fastfetch
+    starship
     feh xpdf
     pavucontrol
     cliphist
@@ -35,7 +36,10 @@
 
   programs.fish = {
     enable = true;
-    interactiveShellInit = "fastfetch";
+    interactiveShellInit = ''
+      fastfetch
+      starship init fish | source
+    '';
   };
 
   programs.lapce.enable = true;
@@ -65,6 +69,12 @@
 
   xdg.configFile."fish" = {
     source = ../../config/fish;
+    recursive = true;
+    force = true;
+  };
+
+  xdg.configFile."starship" = {
+    source = ../../config/starship;
     recursive = true;
     force = true;
   };
