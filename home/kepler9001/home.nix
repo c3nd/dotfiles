@@ -82,8 +82,7 @@
   programs.dank-material-shell = {
     enable = true;
     systemd = {
-      enable = true;
-      # target = "graphical-session.target";  # wrong for user services; let DMS default
+      enable = false;
     };
     enableSystemMonitoring = true;
     enableVPN = true;
