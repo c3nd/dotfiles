@@ -73,6 +73,11 @@
       enable = true;
       # target = "graphical-session.target";  # wrong for user services; let DMS default
     };
+    enableSystemMonitoring = true;
+    enableVPN = true;
+    enableDynamicTheming = true;
+    enableAudioWavelength = true;
+    enableCalendarEvents = true;
   };
 
   qt.platformTheme.name = "qtengine";
