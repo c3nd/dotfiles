@@ -70,13 +70,16 @@
 
   services.upower.enable = true;
   services.printing.enable = true;
+
+  services.syncthing.enable = true;
   services.libinput.enable = true;
 
   services.fprintd.enable = true;
   security.pam.services.login.fprintAuth = true;
   security.pam.services.sudo.fprintAuth = true;
   security.pam.services.su.fprintAuth = true;
-  security.pam.services.ly.fprintAuth = true;
+  # Note: ly fprintAuth removed because it can hang on auth;
+  # keep password fallback fast at the greeter.
 
   programs.openwhispr = {
     enable = true;
@@ -140,7 +143,7 @@
 
   users.users.kepler9001 = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "input" "video" ];
+    extraGroups = [ "wheel" "input" "video" "syncthing" ];
     packages = with pkgs; [ tree ];
   };
 

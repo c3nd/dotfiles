@@ -2,32 +2,38 @@
 -- Loaded by hyprland.conf via source = ...
 -- No dots-hyprland framework dependency
 
+local home = os.getenv("HOME") or ""
+
 -- === DMS integration ===
-if is_file_exists(HOME .. "/.config/hypr/dms/colors.lua") then
+if home ~= "" then
+  local dms_dir = home .. "/.config/hypr/dms"
+  if is_file_exists(dms_dir .. "/colors.lua") then
     require("dms.colors")
-end
-if is_file_exists(HOME .. "/.config/hypr/dms/layout.lua") then
+  end
+  if is_file_exists(dms_dir .. "/layout.lua") then
     require("dms.layout")
-end
-if is_file_exists(HOME .. "/.config/hypr/dms/outputs.lua") then
+  end
+  if is_file_exists(dms_dir .. "/outputs.lua") then
     require("dms.outputs")
-end
+  end
 
--- === Custom configs ===
-if is_file_exists(HOME .. "/.config/hypr/custom/execs.lua") then
+  -- === Custom configs ===
+  local custom_dir = home .. "/.config/hypr/custom"
+  if is_file_exists(custom_dir .. "/execs.lua") then
     require("custom.execs")
-end
-if is_file_exists(HOME .. "/.config/hypr/custom/keybinds.lua") then
+  end
+  if is_file_exists(custom_dir .. "/keybinds.lua") then
     require("custom.keybinds")
-end
-if is_file_exists(HOME .. "/.config/hypr/custom/variables.lua") then
+  end
+  if is_file_exists(custom_dir .. "/variables.lua") then
     require("custom.variables")
-end
+  end
 
--- === Monitor config ===
-if is_file_exists(HOME .. "/.config/hypr/monitors.lua") then
+  -- === Monitor config ===
+  if is_file_exists(home .. "/.config/hypr/monitors.lua") then
     require("monitors")
-end
-if is_file_exists(HOME .. "/.config/hypr/workspaces.lua") then
+  end
+  if is_file_exists(home .. "/.config/hypr/workspaces.lua") then
     require("workspaces")
+  end
 end
