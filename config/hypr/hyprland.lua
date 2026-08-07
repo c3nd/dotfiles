@@ -13,20 +13,11 @@ local function is_file_exists(path)
   return false
 end
 
--- === DMS integration ===
-if home ~= "" then
-  local dms_dir = home .. "/.config/hypr/dms"
-  if is_file_exists(dms_dir .. "/colors.lua") then
-    require("dms.colors")
-  end
-  if is_file_exists(dms_dir .. "/layout.lua") then
-    require("dms.layout")
-  end
-  if is_file_exists(dms_dir .. "/outputs.lua") then
-    require("dms.outputs")
-  end
+-- DMS is managed by home-manager module; do not require its configs here
+-- to avoid duplicate binds / conflicting exec-once.
 
-  -- === Custom configs ===
+-- === Custom configs ===
+if home ~= "" then
   local custom_dir = home .. "/.config/hypr/custom"
   if is_file_exists(custom_dir .. "/variables.lua") then
     require("custom.variables")
