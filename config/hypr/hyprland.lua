@@ -4,6 +4,15 @@
 
 local home = os.getenv("HOME") or ""
 
+local function is_file_exists(path)
+  local f = io.open(path, "r")
+  if f then
+    f:close()
+    return true
+  end
+  return false
+end
+
 -- === DMS integration ===
 if home ~= "" then
   local dms_dir = home .. "/.config/hypr/dms"
