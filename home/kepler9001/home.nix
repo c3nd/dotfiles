@@ -40,6 +40,18 @@
 
   programs.lapce.enable = true;
 
+  programs.caelestia = {
+    enable = true;
+    systemd = {
+      enable = true;
+      target = "graphical-session.target";
+      environment = [];
+    };
+    cli = {
+      enable = true;
+    };
+  };
+
   qt.platformTheme.name = "qtengine";
   gtk.enable = true;
   gtk.font.name = "TX-02";
