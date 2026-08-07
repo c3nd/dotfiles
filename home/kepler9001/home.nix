@@ -119,19 +119,7 @@
   # so DMS Settings can edit hyprland.lua and write dms/*.lua
   home.activation.deployHyprConfig = lib.mkAfter ''
     set -euo pipefail
-    for SRC in \
-      "$HOME/.config/cassiopeia/home/kepler9001/config/hypr" \
-      "$HOME/projects/cassiopeia-dendritic/config/hypr" \
-      "$HOME/dotfiles/config/hypr"
-    do
-      if [ -d "$SRC" ]; then
-        break
-      fi
-    done
-    if [ ! -d "$SRC" ]; then
-      echo "ERROR: cannot find Hyprland config source directory" >&2
-      exit 1
-    fi
+    SRC="$HOME/dotfiles/config/hypr"
     DEST="$HOME/.config/hypr"
     mkdir -p "$DEST" "$DEST/custom"
     cp -f "$SRC/hyprland.conf" "$DEST/hyprland.conf"
