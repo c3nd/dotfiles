@@ -107,11 +107,6 @@
     force = true;
   };
 
-  xdg.configFile."hypr/hyprland.conf".source = ../../config/hypr/hyprland.conf;
-  xdg.configFile."hypr/hyprland.lua".source = ../../config/hypr/hyprland.lua;
-  xdg.configFile."hypr/custom/execs.conf".source = ../../config/hypr/custom/execs.conf;
-  xdg.configFile."hypr/custom/keybinds.conf".source = ../../config/hypr/custom/keybinds.conf;
-
   xdg.configFile."starship" = {
     source = ../../config/starship;
     recursive = true;
@@ -120,9 +115,17 @@
 
   programs.home-manager.enable = true;
 
-  # Ensure ~/.config/hypr is a real writable directory so DMS can write dms/*.lua
+  # Copy Hyprland configs into ~/.config/hypr as real writable files
+  # so DMS Settings can edit hyprland.lua and write dms/*.lua
   home.activation.deployHyprConfig = lib.mkAfter ''
-    mkdir -p "$HOME/.config/hypr"
-    chmod u+w "$HOME/.config/hypr" 2>/dev/null || true
+    set -euo pipefail
+    SRC="$HOME/.config/cassiopeia/home/kepler9001/config/hypr"
+    DEST="$HOME/.config/hypr"
+    mkdir -p "$DEST" "$DEST/custom"
+    cp -f "$SRC/hyprland.conf" "$DEST/hyprland.conf"
+    cp -f "$SRC/hyprland.lua" "$DEST/hyprland.lua"
+    cp -f "$SRC/custom/execs.conf" "$DEST/custom/execs.conf"
+    cp -f "$SRC/custom/keybinds.conf" "$DEST/custom/keybinds.conf"
+    chmod -R u+w "$DEST" 2>/dev/null || true
   '';
 }
