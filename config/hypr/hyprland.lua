@@ -16,14 +16,10 @@ if home ~= "" then
     return false
   end
 
-  if is_file_exists(dms_dir .. "/colors.lua") then
-    require("dms.colors")
-  end
-  if is_file_exists(dms_dir .. "/layout.lua") then
-    require("dms.layout")
-  end
-  if is_file_exists(dms_dir .. "/outputs.lua") then
-    require("dms.outputs")
+  for _, name in ipairs({ "colors", "layout", "outputs", "keybinds", "bindings" }) do
+    if is_file_exists(dms_dir .. "/" .. name .. ".lua") then
+      require("dms." .. name)
+    end
   end
 end
 
