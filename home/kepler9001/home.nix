@@ -53,6 +53,7 @@
     };
     cli = {
       enable = true;
+      package = inputs.caelestia-shell.packages.${pkgs.system}.with-cli;
     };
   };
 
