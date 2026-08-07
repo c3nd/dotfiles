@@ -24,11 +24,12 @@
     octaveFull
     gnuplot
     maxima
-    python3Full
+    python3
     python3Packages.numpy
     python3Packages.scipy
     python3Packages.matplotlib
     python3Packages.pandas
+    tkinter
     texliveFull
 
     zip xz unzip p7zip
