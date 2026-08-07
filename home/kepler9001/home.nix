@@ -15,6 +15,9 @@
   };
 
   home.packages = with pkgs; [
+    # custom fonts
+    (callPackage ../../modules/tx02-fonts.nix {})
+
     # aerospace/school stack
     freecad
     gmsh
