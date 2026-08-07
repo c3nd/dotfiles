@@ -88,7 +88,6 @@
     logseq
     fprintd
     alsa-utils
-    pavucontrol
     ffmpeg
     # aerospace / school stack
     python314
@@ -128,11 +127,12 @@
     cliphist
     feh
     tree
-    pavucontrol
     # browsers
     inputs.zen-browser.packages.${pkgs.system}.beta
     brave
     # lightweight tools
+    xterm
+    kitty
     pcmanfm
     # fonts
     nerd-fonts.jetbrains-mono

@@ -11,7 +11,7 @@
     NH_ELEVATION_STRATEGY = "auto";
     EDITOR = "vim";
     VISUAL = "vim";
-    TERMINAL = "xterm";
+    TERMINAL = "kitty";
   };
 
   home.packages = with pkgs; [
