@@ -15,6 +15,22 @@
   };
 
   home.packages = with pkgs; [
+    # aerospace/school stack
+    freecad
+    gmsh
+    calculix
+    librecad
+    openscad
+    octaveFull
+    gnuplot
+    maxima
+    python3Full
+    python3Packages.numpy
+    python3Packages.scipy
+    python3Packages.matplotlib
+    python3Packages.pandas
+    texliveFull
+
     zip xz unzip p7zip
     fastfetch
     starship
@@ -48,7 +64,7 @@
     enable = true;
     systemd = {
       enable = true;
-      target = "graphical-session.target";
+      # target = "graphical-session.target";  # wrong for user services; let DMS default
     };
   };
 

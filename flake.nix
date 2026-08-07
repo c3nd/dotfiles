@@ -30,8 +30,14 @@
       };
 
       homeConfigurations.kepler9001 = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-        extraSpecialArgs = { inherit inputs nh; };
+        pkgs = import nixpkgs { 
+          system = "x86_64-linux"; 
+          config.permittedInsecurePackages = [
+            "electron-39.8.10"
+            "xpdf-4.06"
+          ];
+        };
+        extraSpecialArgs = { inherit inputs nh; dmsPkgs = inputs.dank-material-shell.packages.${pkgs.system}; };
         modules = [
           ./home/kepler9001/home.nix
           inputs.dank-material-shell.homeModules.dank-material-shell
