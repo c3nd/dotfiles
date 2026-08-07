@@ -87,6 +87,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    openssh
     nh
     logseq
     fprintd
