@@ -17,10 +17,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     kopuz.url = "github:temidaradev/kopuz";
+    beer.url = "github:Michael-C-Buckley/beer";
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, qtengine, dank-material-shell, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, qtengine, dank-material-shell, beer, ... }@inputs:
     {
       nixosConfigurations.Cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

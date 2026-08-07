@@ -17,6 +17,7 @@
   home.packages = with pkgs; [
     # media
     kopuz
+    inputs.beer.packages.x86_64-linux.default
 
     # aerospace/school stack
     freecad
