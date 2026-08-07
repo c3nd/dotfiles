@@ -73,6 +73,10 @@
   gtk.enable = true;
   gtk.font.name = "TX-02";
   fonts.fontconfig.enable = true;
+  fonts.fontconfig.defaultFonts = {
+    sansSerif = [ "TX-02" ];
+    monospace = [ "TX-02" ];
+  };
 
   xdg.configFile."fish" = {
     source = ../../config/fish;
