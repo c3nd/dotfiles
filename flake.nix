@@ -8,20 +8,18 @@
     nh.url = "github:nix-community/nh";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     openwhispr.url = "github:OpenWhispr/OpenWhispr";
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hyprland.follows = "hyprland";
-      inputs.home-manager.follows = "home-manager";
-    };
     qtengine = {
       url = "github:kossLAN/qtengine";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    dank-material-shell = {
+      url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, caelestia-shell, qtengine, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, qtengine, dank-material-shell, ... }@inputs:
     {
       nixosConfigurations.Cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -36,7 +34,7 @@
         extraSpecialArgs = { inherit inputs nh; };
         modules = [
           ./home/kepler9001/home.nix
-          inputs.caelestia-shell.homeManagerModules.default
+          inputs.dank-material-shell.homeModules.dank-material-shell
         ];
       };
     };

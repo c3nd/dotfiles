@@ -44,16 +44,11 @@
 
   programs.lapce.enable = true;
 
-  programs.caelestia = {
+  programs.dank-material-shell = {
     enable = true;
     systemd = {
       enable = true;
       target = "graphical-session.target";
-      environment = [];
-    };
-    cli = {
-      enable = true;
-      package = inputs.caelestia-shell.packages.${pkgs.system}.with-cli;
     };
   };
 
@@ -61,12 +56,6 @@
   gtk.enable = true;
   gtk.font.name = "TX-02";
   fonts.fontconfig.enable = true;
-
-  xdg.configFile."caelestia" = {
-    source = ../../config/caelestia;
-    recursive = true;
-    force = true;
-  };
 
   xdg.configFile."fish" = {
     source = ../../config/fish;

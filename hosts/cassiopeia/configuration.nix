@@ -1,6 +1,6 @@
 # Cassiopeia — NixOS system configuration
 # Host: HP ZBook Firefly 15.6 G8 (i7-1185G7, 32GB, T500)
-# Desktop: Hyprland + caelestia-shell (configured in home.nix)
+# Desktop: Hyprland + DankMaterialShell (configured in home.nix)
 # Boot: systemd-boot (EFI), shared NVMe with Windows
 { config, lib, pkgs, inputs, ... }:
 
@@ -134,7 +134,6 @@
     xterm
     kitty
     pcmanfm
-    inputs.caelestia-shell.packages.${pkgs.system}.with-cli
     # fonts
     nerd-fonts.jetbrains-mono
   ];
