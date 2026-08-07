@@ -43,6 +43,7 @@
     fish
     brave
     zed-editor
+    handy
     fprintd
     qt6.qtwayland
 
@@ -113,18 +114,4 @@
   };
 
   programs.home-manager.enable = true;
-
-  # Copy Hyprland configs into ~/.config/hypr as real writable files
-  # so DMS Settings can edit hyprland.lua and write dms/*.lua
-  home.activation.deployHyprConfig = lib.mkAfter ''
-    set -euo pipefail
-    SRC="$HOME/dotfiles/config/hypr"
-    DEST="$HOME/.config/hypr"
-    mkdir -p "$DEST" "$DEST/custom"
-    cp -f "$SRC/hyprland.conf" "$DEST/hyprland.conf"
-    cp -f "$SRC/hyprland.lua" "$DEST/hyprland.lua"
-    cp -f "$SRC/custom/execs.conf" "$DEST/custom/execs.conf"
-    cp -f "$SRC/custom/keybinds.conf" "$DEST/custom/keybinds.conf"
-    chmod -R u+w "$DEST" 2>/dev/null || true
-  '';
 }

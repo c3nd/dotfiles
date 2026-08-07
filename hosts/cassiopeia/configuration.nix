@@ -8,7 +8,6 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/qtengine.nix
-    inputs.openwhispr.nixosModules.default
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -81,11 +80,6 @@
   security.pam.services.su.fprintAuth = true;
   # Note: ly fprintAuth removed because it can hang on auth;
   # keep password fallback fast at the greeter.
-
-  programs.openwhispr = {
-    enable = true;
-    users = [ "kepler9001" ];
-  };
 
   environment.systemPackages = with pkgs; [
     openssh

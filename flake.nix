@@ -7,7 +7,6 @@
     home-manager.url = "github:nix-community/home-manager";
     nh.url = "github:nix-community/nh";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    openwhispr.url = "github:OpenWhispr/OpenWhispr";
     qtengine = {
       url = "github:kossLAN/qtengine";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,7 +20,7 @@
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nh, zen-browser, openwhispr, qtengine, dank-material-shell, beer, ... }@inputs:
+    { self, nixpkgs, home-manager, nh, zen-browser, qtengine, dank-material-shell, beer, ... }@inputs:
     {
       nixosConfigurations.Cassiopeia = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
