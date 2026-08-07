@@ -18,7 +18,7 @@
     # aerospace/school stack
     freecad
     gmsh
-    calculix
+    calculix-ccx
     librecad
     openscad
     octaveFull
