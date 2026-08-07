@@ -1,5 +1,6 @@
--- Cassiopeia custom keybinds for DankMaterialShell/Hyprland
--- End-4-style, but no quickshell dependency so it works standalone
+-- Cassiopeia custom keybinds
+-- Integrated with DankMaterialShell IPC where applicable
+-- Window/workspace management stays Hyprland-native
 
 require("hyprland.lib")
 require("hyprland.variables")
@@ -7,21 +8,48 @@ if is_file_exists(HOME .. "/.config/hypr/custom/variables.lua") then
     require("custom.variables")
 end
 
--- Utilities: Screenshot, clipboard, color picker, recording
-hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot --freeze --clipboard-only --mode region --silent"), { description = "Utilities: Screen snip" })
-hl.bind("Print", hl.dsp.exec_cmd("grim -o \"$(hyprctl activeworkspace -j | jq -r '.monitor')\" - | wl-copy"), { locked = true, description = "Utilities: Screenshot >> clipboard" })
+-- === DMS IPC: Audio ===
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dms ipc call audio increment 2"), { locked = true, repeating = true, description = "Audio: Volume up" })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dms ipc call audio decrement 2"), { locked = true, repeating = true, description = "Audio: Volume down" })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("dms ipc call audio mute"), { locked = true, description = "Audio: Mute" })
+hl.bind("CTRL + SUPER + M", hl.dsp.exec_cmd("dms ipc call mic mute"), { description = "Audio: Mic mute toggle" })
+
+-- === DMS IPC: Media ===
+hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("dms ipc call mpris playPause"), { locked = true, description = "Media: Play/Pause" })
+hl.bind("XF86AudioNext", hl.dsp.exec_cmd("dms ipc call mpris next"), { locked = true, description = "Media: Next track" })
+hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("dms ipc call mpris previous"), { locked = true, description = "Media: Prev track" })
+hl.bind("XF86AudioStop", hl.dsp.exec_cmd("dms ipc call mpris stop"), { locked = true, description = "Media: Stop" })
+
+-- === DMS IPC: Brightness ===
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("dms ipc call brightness increment 10"), { locked = true, repeating = true, description = "Display: Brightness up" })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("dms ipc call brightness decrement 10"), { locked = true, repeating = true, description = "Display: Brightness down" })
+
+-- === DMS IPC: Night mode ===
+hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("dms ipc call night toggle"), { description = "Display: Night mode toggle" })
+
+-- === DMS IPC: Lock / Inhibit ===
+hl.bind("SUPER + L", hl.dsp.exec_cmd("dms ipc call lock lock"), { description = "Session: Lock" })
+hl.bind("SUPER + SHIFT + L", hl.dsp.exec_cmd("dms ipc call inhibit toggle || loginctl suspend"), { locked = true, description = "Session: Sleep / Inhibit idle" })
+
+-- === DMS IPC: Power profile ===
+hl.bind("SUPER + SHIFT + P", hl.dsp.exec_cmd("dms ipc call powerprofile cycle"), { description = "Power: Cycle power profile" })
+
+-- === DMS IPC: Wallpaper ===
+hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("dms ipc call wallpaper next"), { description = "Wallpaper: Next wallpaper" })
+
+-- === DMS IPC: Theme ===
+hl.bind("SUPER + SHIFT + T", hl.dsp.exec_cmd("dms ipc call theme toggle"), { description = "Appearance: Theme toggle" })
+
+-- === DMS IPC: Sessions ===
+hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("dms ipc call sessions open"), { description = "Session: Switch user" })
+
+-- === Direct utilities: Screenshot / Clipboard / Color / Recording ===
 hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Utilities: Pick color #RRGGBB >> clipboard" })
 hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("wf-recorder -f /tmp/recording_$(date +%s).mp4"), { locked = true, description = "Utilities: Record region" })
+hl.bind("Print", hl.dsp.exec_cmd("grim -o \"$(hyprctl activeworkspace -j | jq -r '.monitor')\" - | wl-copy"), { locked = true, description = "Utilities: Screenshot >> clipboard" })
+hl.bind("SUPER + Print", hl.dsp.exec_cmd("hyprshot --freeze --clipboard-only --mode region --silent"), { description = "Utilities: Screen snip" })
 
--- Media
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"), { locked = true, repeating = true })
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_SINK@ toggle"), { locked = true })
-hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
-hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
-
--- Window
+-- === Hyprland window management ===
 for i = 1, 4 do
     local arrowkey = { "Left", "Right", "Up", "Down" }
     local focusdir = { "l", "r", "u", "d" }
@@ -37,20 +65,18 @@ hl.bind("SUPER + D", hl.dsp.window.fullscreen({ mode = "maximized", action = "to
 hl.bind("SUPER + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }), { description = "Window: Fullscreen" })
 hl.bind("SUPER + ALT + Space", hl.dsp.window.float({ action = "toggle" }), { description = "Window: Float/Tile" })
 
--- Workspace switching
+-- === Workspaces ===
 for i = 1, 10 do
     hl.bind("SUPER + " .. (i % 10), function()
         hl.dispatch(hl.dsp.focus({ workspace = workspace_in_group(i) }))
     end, { description = "Workspace: Focus " .. i })
 end
 
--- Apps
+-- === Apps ===
 hl.bind("SUPER + Return", hl.dsp.exec_cmd(terminal), { description = "App: Terminal" })
 hl.bind("SUPER + E", hl.dsp.exec_cmd(fileManager), { description = "App: File manager" })
 hl.bind("SUPER + W", hl.dsp.exec_cmd(browser), { description = "App: Browser" })
 hl.bind("SUPER + C", hl.dsp.exec_cmd(codeEditor), { description = "App: Code editor" })
 hl.bind("SUPER + X", hl.dsp.exec_cmd(textEditor), { description = "App: Text editor" })
-
--- Session
-hl.bind("SUPER + L", hl.dsp.exec_cmd("loginctl lock-session"), { description = "Session: Lock" })
-hl.bind("SUPER + SHIFT + L", hl.dsp.exec_cmd("systemctl suspend || loginctl suspend"), { locked = true, description = "Session: Sleep" })
+hl.bind("SUPER + V", hl.dsp.exec_cmd(volumeMixer), { description = "App: Volume mixer" })
+hl.bind("SUPER + B", hl.dsp.exec_cmd("brave"), { description = "App: Brave browser" })
